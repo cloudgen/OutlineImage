@@ -16,7 +16,7 @@ The folder structure for the `VideoJoin` project is organized for modularity, do
 VideoJoin/
 ├── build.sh                  # Shell script for Cython compilation and setup (POSIX-compliant for Linux/macOS)
 ├── docs/
-│   ├── CHANGELOG.md          # High-level release notes, e.g., "v1.0.0: Initial video joiner with FFmpeg integration"
+│   ├── CHANGELOG.md          # High-level release notes, e.g., "v1.0.1: Initial video joiner with FFmpeg integration"
 │   ├── folder-structure.md   # Detailed layout explanation, including rationale for Cython setup
 │   └── VideoClip-spec.md     # Project-specific specifications, covering video formats, FFmpeg dependencies, and Cython optimization goals
 ├── pyproject.toml            # Configuration for build tools (e.g., setuptools, Cython), dependencies (FFmpeg via subprocess), and packaging
@@ -47,7 +47,7 @@ This structure supports code modularity (src isolation), extensive documentation
 - **File Naming**: Snake_case for Python files (e.g., `cli.py`); descriptive and lowercase (e.g., `CHANGELOG.md`).
 - **Output Files**: User-provided or default `{vid1.stem} + {vid2.stem}.mp4` (preserves original stems, adds `+` separator for clarity).
 - **Temporary Files**: `filelist.txt` (fixed name, UTF-8 encoded, auto-removed post-use).
-- **Versioning**: Semantic (`__version__ = "1.0.0"` in `__init__.py`); update via CHANGELOG.md for releases  .
+- **Versioning**: Semantic (`__version__ = "1.0.1"` in `__init__.py`); update via CHANGELOG.md for releases  .
 - **Cython Builds**: Output binaries prefixed with `VideoJoin_` (e.g., `VideoJoin_cli.c`); configurable in `pyproject.toml` .
 
 Adhere to lowercase for paths and filenames to ensure cross-platform compatibility, avoiding spaces or special characters  .
@@ -59,7 +59,7 @@ The project uses procedural functions in `cli.py` rather than heavy OOP, but `__
 ### Attributes
 
 - None explicitly defined (functional style). Potential additions:
-  - `__version__`: String "1.0.0" (package-level).
+  - `__version__`: String "1.0.1" (package-level).
   - `__all__`: List `["ChronicleLogger"]` (exports; update to `["VideoJoiner", "main"]` if class added) .
 
 ### Methods
