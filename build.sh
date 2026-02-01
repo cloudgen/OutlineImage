@@ -40,6 +40,7 @@ Commands:
   tag        Create and push git tag v$VERSION
   release    clean -> build -> upload -> tag (full release!)
   all        Same as release
+  version    Show current version
   test       Run the test suite (pytest
              Optional arguments are passed directly to pytest.
              Examples:
@@ -51,6 +52,10 @@ Example:
   ./build.sh release
   ./build.sh test -v
 EOF
+}
+
+do_version() {
+    echo "VideoJoin build tool (v$VERSION)"
 }
 
 do_setup() {
@@ -129,6 +134,7 @@ case "${1:-}" in
     build)     do_build     ;;
     upload)    do_upload    ;;
     git)       do_git       ;;
+    version)   do_version   ;;
     tag)       do_tag       ;;
     test)      shift; do_test "$@" ;;           # <-- new command
     release|all)

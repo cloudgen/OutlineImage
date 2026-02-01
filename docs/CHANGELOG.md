@@ -21,7 +21,7 @@
 
 ---
 
-## [1.0.1] - 2023-10-01
+## [1.0.2] - 2023-10-01
 ### Added
 - Core video joining functionality using FFmpeg for stream copy (lossless) or fallback re-encoding, supporting MP4, MOV, MKV, AVI, M4V formats .
 - Interactive CLI for file selection, output naming, and error handling (e.g., FFmpeg availability check) .
