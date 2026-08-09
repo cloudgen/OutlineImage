@@ -1,122 +1,90 @@
-# VideoJoin
+# VideoJoin - Join two local videos with FFmpeg (stream-copy first)
 
-## Overview
+![Version](https://img.shields.io/badge/Version-1.0.3-blue?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+[![CIAO](https://img.shields.io/badge/Philosophy-CIAO%20(Caution%20%E2%80%A2%20Intentional%20%E2%80%A2%20Anti--fragile%20%E2%80%A2%20Over--engineered)-purple.svg)](https://github.com/cloudgen/ciao)
+[![Stars](https://img.shields.io/github/stars/Wilgat/VideoJoin?style=flat-square)](https://github.com/Wilgat/VideoJoin)
+[![Python](https://img.shields.io/badge/Python-2.7%2B%20(3.x%20recommended)-blue?style=flat-square)]()
 
-VideoJoin is a lightweight command-line tool for concatenating two video files (MP4, MOV, MKV, AVI, M4V) while preserving original audio and video quality using FFmpeg. It supports fast stream copying for compatible files and falls back to re-encoding for mismatches, making it ideal for quick edits without quality loss. As a Cython-optimized project, it leverages compiled extensions for efficient file scanning and subprocess handling, suitable for developers and users in media workflows .
-
-This project follows a modular structure with source code in `src/VideoJoin/`, documentation in `docs/`, and build automation via `pyproject.toml` and `build.sh` for cross-platform compatibility (Linux, macOS, Windows with adjustments)   .
+VideoJoin is a lightweight **interactive** command-line tool that concatenates **two** video files from the current directory using **FFmpeg**. It prefers **stream copy** (no re-encode when possible) and **fail-closed re-encode fallback** when copy fails. Intermediate files are staged next to the output path when possible and published with **`shutil.move`** for multi-mount safety (for example USB).
 
 ## Features
 
-- Interactive selection of video files from the current directory.
-- Automatic sorting and listing of eligible videos by name (case-insensitive).
-- Lossless joining via FFmpeg concat (no re-encoding when possible).
-- Fallback to high-quality re-encoding (libx264 CRF 18, AAC 192k) for incompatible formats.
-- Temporary file handling with cleanup.
-- FFmpeg dependency check on startup.
-- Cython compilation for performance boosts in I/O operations  .
+- Interactive pick of first and second video (same file cannot be chosen twice)
+- Discovers `.mp4`, `.mov`, `.mkv`, `.avi`, `.m4v` in the **current working directory** (sorted case-insensitively)
+- Stream-copy join first (`ffmpeg` concat demuxer); re-encode fallback (`libx264` CRF 18, AAC 192k)
+- Fail-closed: no success message if both paths fail
+- Unique temp list + media intermediates; cleanup on success and failure
+- Publish intermediates with `shutil.move` (same FS rename; cross-mount copy+delete)
+- FFmpeg on `PATH` checked before joining
+- Console script `video-join` and module entry `python -m VideoJoin`
 
-## Prerequisites
+## Quick Installation
 
-- Python 3.6+ (recommend 3.12 for Cython compatibility; use pyenv for isolation: `curl https://pyenv.run | bash`, then `pyenv install 3.12.0` and `pyenv shell 3.12.0`) .
-- FFmpeg installed and in your PATH (download from https://ffmpeg.org/download.html).
-- C compiler (e.g., gcc on Linux/macOS, Visual Studio on Windows) for Cython builds.
-- Git for version control (recommended to initialize a repository and use `.gitignore` to exclude `__pycache__/`, `build/`, `*.so`, `.env`)    .
+**System requirement:** [FFmpeg](https://ffmpeg.org/download.html) must be installed and available as `ffmpeg` on your `PATH`. The package does **not** install FFmpeg via pip.
 
-No additional pip packages are required beyond the standard library, but for development, consider `cython` via `pip install cython` in an isolated environment  .
+### Local install (primary)
 
-## Installation
+From a checkout:
 
-### From Source (Recommended for Development)
-
-1. Clone or download the repository:
-   ```
-   git clone <repo-url>
-   cd VideoJoin
-   ```
-
-2. Initialize Git if starting fresh (optional but recommended):
-   ```
-   git init
-   ```
-
-3. Set up `.gitignore` to exclude build artifacts and caches:
-   ```
-   # .gitignore content
-   .env
-   __pycache__/
-   *.pyc
-   *.pyo
-   *.so
-   build/
-   ```
-       .
-
-4. Build and install in editable mode (handles Cython compilation):
-   ```
-   # Ensure pyenv or virtualenv for isolation
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-   # Install Cython if needed
-   pip install cython
-
-   # Build extensions
-   chmod +x build.sh
-   ./build.sh  # Or python setup.py build_ext --inplace if using setup.py
-
-   # Editable install
-   pip install -e .
-   ```
-   This compiles Cython files (e.g., `cli.pyx` if converted) into `.so` binaries in `build/lib/` and makes the package available as `VideoJoin`  .
-
-### Via pip (Packaged Release)
-
-Once published to PyPI (future), install directly:
+```bash
+git clone https://github.com/Wilgat/VideoJoin.git
+cd VideoJoin
+python3 -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -e .
 ```
-pip3 install VideoJoin
-```
-This pulls from PyPI, installs dependencies (none beyond stdlib), and sets up the entry point for `videojoin` command or `python -m VideoJoin`  .
 
-For requirements management, create `requirements.txt` with any dev tools:
-```
-cython
-pytest  # For tests
-```
-Then `pip3 install -r requirements.txt` .
+This installs the console entry **`video-join`** and the package **`VideoJoin`**.
+
+Optional dependency declared in packaging: `ChronicleLogger` (not required for the current interactive console paths).
+
+### PyPI
+
+A future `pip install VideoJoin` channel may appear when the project is published to PyPI. **Today, install from source** as above. Do not assume a live PyPI release without checking [the project page](https://github.com/Wilgat/VideoJoin).
 
 ## Usage
 
-### Command-Line Execution
+After install:
 
-Run the tool directly from the source directory:
+```bash
+# ensure videos are in the current directory
+cd /path/to/folder/with/clips
+video-join
 ```
-python -m src.VideoJoin
-```
-Or after installation:
-```
+
+Or:
+
+```bash
 python -m VideoJoin
 ```
-(If entry point is configured in `pyproject.toml`, use `videojoin` as a script.)
 
-The tool will:
-1. Scan the current folder for video files.
-2. Prompt for selection of first and second video (prevents duplicates).
-3. Ask for output filename (defaults to `{file1} + {file2}.mp4`).
-4. Execute FFmpeg and report success/failure.
+Session steps:
 
-Example session:
-```
+1. Lists eligible videos in the current directory  
+2. Choose first video (number)  
+3. Choose second video from the remaining list  
+4. Confirm or edit output name (default: `{stem1} + {stem2}.mp4`)  
+5. FFmpeg stream-copy → on failure, re-encode → publish result  
+
+Exit codes: non-zero if fewer than two videos, FFmpeg missing, or join fails.
+
+## Examples
+
+```text
+$ video-join
 Video Joiner – WITH ORIGINAL AUDIO (using ffmpeg)
 
+VideoJoin 1.0.3
+
 Found video files:
-  1. clip1.mp4
-  2. clip2.mkv
+   1. clip1.mp4
+   2. clip2.mkv
 
 Choose FIRST video → 1
 
 Found video files:
-  1. clip2.mkv
+   1. clip2.mkv
 
 Choose SECOND video → 1
 
@@ -126,54 +94,46 @@ Joining with perfect audio sync:
    clip1.mp4
  + clip2.mkv
  → joined.mp4
+   Staging dir → .
 
 Running ffmpeg (stream copy – no quality loss)…
 SUCCESS! Perfectly joined with original sound → joined.mp4
 ```
 
-For batch or advanced use, extend via importing `from VideoJoin.cli import main` in scripts .
+Import for scripts (thin entry):
 
-### Building for Distribution
-
-- Use `python -m build` to create wheels/sdists (configured in `pyproject.toml`).
-- Cython outputs like `VideoJoin.cpython-312-x86_64-linux-gnu.so` go to `build/lib/` (gitignore them for clean repos)  .
-
-## Project Structure
-
+```python
+from VideoJoin import main
+# interactive session; expects cwd videos + TTY stdin
 ```
-VideoJoin/
-├── build.sh                  # POSIX build script for Cython
-├── docs/                     # Documentation
-│   ├── CHANGELOG.md
-│   ├── folder-structure.md
-│   └── VideoClip-spec.md
-├── pyproject.toml            # Build config (setuptools/Cython)
-├── README.md                 # This file
-└── src/
-    └── VideoJoin/
-        ├── cli.py            # Core logic (Cython-compatible)
-        ├── __init__.py       # Package init and version
-        └── __main__.py       # Entry point
-```
-Add `tests/` for unit tests (e.g., `test_cli.py`) and `requirements-dev.txt` for tools like pytest   .
 
-## Development
+## Platform Compatibility
 
-- **Folder Creation**: Use `mkdir -p src/VideoJoin docs tests` for extensions .
-- **Logging/History**: The CLI uses print statements; extend with `inspect` for traceable calls if needed .
-- **Testing**: Run `pytest tests/` after setup.
-- **Versioning**: Update `__version__` in `__init__.py` and `CHANGELOG.md` per semantic rules .
-- **License**: Add `LICENSE` (e.g., MIT) for open-source use .
+| Platform | Status |
+|----------|--------|
+| Linux | Primary; tested development path |
+| macOS | Supported when Python + FFmpeg on PATH |
+| Windows | Supported when Python + FFmpeg on PATH (venv activate differs) |
+| Architectures | Any with CPython + FFmpeg binary |
 
-## Troubleshooting
+Interactive prompts need a terminal (or fed stdin). Non-interactive automation flags are not implemented yet.
 
-- **FFmpeg Not Found**: Install via package manager (e.g., `apt install ffmpeg` on Ubuntu) or download binaries.
-- **Cython Build Errors**: Verify Python version with `which python3` and ensure C compiler; use `language_level=3` in directives .
-- **Permission Issues**: On Unix, `chmod +x` scripts; use virtualenv to avoid global installs.
-- **Cross-Platform**: Test paths with `pathlib`; avoid OS-specific assumptions .
+## Related Projects
 
-For issues, check `CHANGELOG.md` or open a Git issue. Contributions welcome via pull requests after Git setup   .
+- [VideoJoin on GitHub](https://github.com/Wilgat/VideoJoin) — this repository  
+- Sibling media tooling (same author ecosystem) may include other FFmpeg CLIs; this product is **two-file join only**, not cut/speed/boomerang editing  
+
+## Contributing
+
+1. Keep product law under `docs/requirements/` in sync when behavior changes.  
+2. Prefer small, CIAO-safe changes; do not remove Protection Zones in `cli.py` (staging / `shutil.move` publish) without explicit design.  
+3. Version dual SSOT: bump **`pyproject.toml`** and **`src/VideoJoin/__init__.__version__`** together.  
+4. Open issues and pull requests on GitHub.
 
 ## License
 
-MIT License (add `LICENSE` file with standard text) .
+MIT — see [`LICENSE.md`](./LICENSE.md). Also declared in `pyproject.toml`.
+
+## Last Update
+
+2026-08-09 — README aligned with **1.0.3** (fail-closed join, unique temps, `shutil.move` promote, honest install/runtime docs).

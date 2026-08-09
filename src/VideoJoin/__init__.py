@@ -1,4 +1,8 @@
-from .cli import ChronicleLogger
+# Package public surface — requirement-python-packaging / requirement-python-coding-style
+# Do not re-export undefined symbols from .cli.
 
-__version__ = "1.0.2"
-__all__ = ["ChronicleLogger"]
+__version__ = "1.0.3"
+
+from .cli import main
+
+__all__ = ["__version__", "main"]
