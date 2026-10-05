@@ -5,13 +5,31 @@ Version SSOT: `pyproject.toml` + `src/VideoJoin/__init__.__version__`.
 
 ## [Unreleased]
 
-### Added
-
-- (none yet)
+## [1.0.5] - 2026-10-04
 
 ### Changed
 
-- (none yet)
+- `about` shows one page: product identity, a host check of this computer, and a star box. The page stays English. It does not probe `ffmpeg` and it does not print a pip install line.
+- Self-management row 83 reads "version, FFmpeg, and this computer."
+- Version is **1.0.5**. `ChronicleLogger>=1.3.1` is unchanged.
+- Product README Screenshots links every picture in `screenshots/` with an absolute `https` URL. Menu pictures captured before the about page still show **1.0.4**.
+
+## [1.0.4] - 2026-10-04
+
+### Added
+
+- Text menu on a terminal when `video-join` is started with no arguments. Front rows are join (1), system-log (3), language (4), self-management (8), and Exit (9). system-log lists view-log (31), clear-log (32), log-folder (33), and Back (0). language lists English through Ελληνικά (41–53) and Back (0). self-management lists version (82), about (83), version-check (84), self-update (85), self-uninstall (86), self-install (87), and Back (0).
+- Menu language file `~/.local/VideoJoin/language`. `VIDEOJOIN_LANG` overrides that file for one process and does not write it. `language` is not a command-line verb.
+- Typed verbs `help`, `version`, `about`, `hello`, `join`, `list-videos`, `self-install`, `version-check`, `self-update`, and `self-uninstall`.
+- `ChronicleLogger` is constructed in `main` and required at `ChronicleLogger>=1.3.1`.
+- Product README shows the main menu, the system-log board, the language board, and the self-management board.
+- Product README PyPI version badge (`pypi.org/project/VideoJoin`).
+
+### Changed
+
+- Empty argv on a terminal opens that menu and does not start the join questions. With no terminal, empty argv prints help and returns 0.
+- Quick Installation documents **`pip install VideoJoin`**. This tree is **1.0.4**. A registry probe on 2026-08-19 reported **1.0.3**. Checkout `pip install -e .` stays the local path.
+- Join still prefers stream copy, then re-encode, and still publishes with `shutil.move`.
 
 ---
 

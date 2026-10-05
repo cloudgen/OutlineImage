@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-video-ffmpeg-pipeline.md  
-**Status**: Active (Version 1.1.0)  
+**Status**: Active (Version 1.2.0)  
 **Area**: video  
 **Key**: `requirement-video-ffmpeg-pipeline`  
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -8,7 +8,38 @@
 
 This requirement is the **operational Single Source of Truth** for VideoJoin media processing: two-file concat via FFmpeg, preferred stream-copy path, re-encode fallback, concat list lifecycle, intermediate staging, publish via **`shutil.move`**, and invocation rules.
 
-Domain feature catalog and user workflow labels live in **`requirement-domain-videojoin`**. Interactive prompts live in **`requirement-python-cli-interface`**. File move/temp style lives in **`requirement-python-coding-style`**.
+Domain feature catalog and user workflow labels live in **`requirement-domain-videojoin`**. The `join` verb and empty argv live in **`requirement-python-cli-interface`**. The screen that asks the questions lives in **`requirement-python-tui`**. File move and temp style live in **`requirement-python-coding-style`**. The temp, publish, and discard log lines live in **`requirement-python-cli-logging`**.
+
+### 1.1 Human-facing
+
+**In one sentence:** VideoJoin joins two videos by copying the streams when it can, and by re-encoding when that copy fails, then moves the finished file into place.
+
+| Box | Meaning | Example |
+|-----|---------|---------|
+| You / this login | Person who already picked two videos and an output name | The program writes a new file and leaves the two sources alone |
+| The other role | The questions and the status file | The text menu asks. ChronicleLogger records the temp and the move |
+| Not this file | Which row is on the menu, and the pip commands | `requirement-python-tui` |
+
+| Includes | Excludes |
+|----------|----------|
+| Stream copy first, then a fail-closed re-encode. A unique temp list. `shutil.move` into the output name | Deleting either source. Using one source path as the output |
+| Non-interactive FFmpeg (`-y`) | A second prompt inside FFmpeg |
+| Log lines before the temp write, the move, and a discard | A claim that this file owns the menu |
+
+| Surface | What you open | What for |
+|---------|---------------|----------|
+| `join` after the three answers | FFmpeg | Concatenate |
+| Output name | The new file | The finished movie |
+| The two source files | Unchanged | They stay where you put them |
+
+| You do… | What it means | What you type |
+|---------|---------------|---------------|
+| Finish a join | Copy runs first. If it fails, re-encode runs. The finished temp is moved onto the output name. | The output name at the join question |
+| Watch a failure | You see a failure sentence. The sources stay. An unfinished temp is not the result. | `video-join join` |
+
+## Under command line for normal user only
+
+On Termux, Git Bash, Windows cmd, or the same class, FFmpeg runs as the normal user who started `video-join`. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user to run FFmpeg or to publish the output. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`.
 
 ---
 
@@ -37,7 +68,8 @@ Domain feature catalog and user workflow labels live in **`requirement-domain-vi
 13. **MUST** treat fallback success only as: FFmpeg exit code **0** **and** intermediate present and non-empty.  
 14. On fallback success, **MUST** publish via **`shutil.move`** (or thin wrapper).  
 15. On fallback failure, **MUST NOT** print a success message; **MUST** fail closed (non-zero process exit from the join session).  
-16. **MUST** document encode defaults in Implementation Notes.  
+16. **MUST** document encode defaults in Implementation Notes.
+17. Before a temp write, a `shutil.move` publish, and a discard of an unfinished temp, **MUST** call `log_message` as `requirement-python-cli-logging` requires (component `join`, INFO, before the operation). This file still owns the operation order.  
 17. Changing codec/CRF/preset/bitrate **MUST** update Implementation Notes in the same change as code.  
 18. **MUST NOT** claim a lossless pipeline when the fallback re-encode path ran.
 
@@ -138,7 +170,9 @@ Domain feature catalog and user workflow labels live in **`requirement-domain-vi
 | Key | Relationship |
 |-----|--------------|
 | `requirement-domain-videojoin` | Domain surface |
-| `requirement-python-cli-interface` | User inputs |
+| `requirement-python-cli-interface` | `join` verb |
+| `requirement-python-tui` | Questions on the text screen |
+| `requirement-python-cli-logging` | Log temp write, publish, and discard before the operation |
 | `requirement-python-error-handling` | Fail messaging |
 | `requirement-python-coding-style` | Temps + `shutil.move` |
 | `requirement-runtime-prerequisites` | `ffmpeg` present |
@@ -164,9 +198,10 @@ Domain feature catalog and user workflow labels live in **`requirement-domain-vi
 |------|--------|------|
 | 2026-08-09 | Active 1.0.0 | Initial FFmpeg join pipeline law for VideoJoin |
 | 2026-08-09 | Active 1.1.0 | Unique temps, shutil.move publish, fail-closed fallback |
+| 2026-10-04 | Active 1.2.0 | Questions live on the text screen. Temp, publish, and discard log lines are owned by the logging requirement |
 
 ---
 
-**Last Updated**: 2026-08-09  
+**Last Updated**: 2026-10-04  
 **Owner**: project maintainers  
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

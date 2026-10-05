@@ -1,361 +1,334 @@
 #!/usr/bin/env python
 # =============================================================================
-# VideoJoin CLI — interactive two-file join via FFmpeg
-# Law keys: requirement-domain-videojoin, requirement-video-ffmpeg-pipeline,
-#           requirement-python-cli-interface, requirement-python-error-handling,
-#           requirement-python-coding-style, requirement-runtime-prerequisites
+# VideoJoin CLI — text menu and typed verbs.
+# Law keys: requirement-python-cli-interface, requirement-python-cli-logging,
+#           requirement-python-tui, requirement-python-oop,
+#           requirement-python-about, requirement-domain-videojoin,
+#           requirement-python-error-handling, requirement-python-coding-style,
+#           requirement-runtime-prerequisites
 # CIAO-Lite: Caution • Intentional • Anti-fragile • Over-protect
+# def main writes ChronicleLogger(...). This module does not construct it
+# at import time and does not re-export it.
 # =============================================================================
 from __future__ import print_function, unicode_literals
 
-import os
-import shutil
-import subprocess
+import argparse
 import sys
-import tempfile
-from pathlib import Path
 
-try:
-    from . import __version__ as _PKG_VERSION
-except Exception:
-    _PKG_VERSION = "1.0.3"
-
-APP_NAME = "VideoJoin"
-CONSOLE_NAME = "video-join"
-
-VIDEO_SUFFIXES = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
-OUTPUT_SUFFIXES = (".mp4", ".mkv", ".mov")
+from .about_page import AboutPage
+from .check_system import CheckSystem
+from .join import Join
+from .self_management import SelfManage
+from .tui import Tui
 
 
-def out_info(msg):
-    """User-facing informational line (stdout)."""
-    print(msg)
+class Cli:
+    """Parser, dispatch, verbs, and the tty gate. One class in this file.
 
-
-def out_err(msg):
-    """User-facing error line (stderr)."""
-    print(msg, file=sys.stderr)
-
-
-# =============================================================================
-# CIAO-Lite Protection Zone — temp staging + publish (USB / multi-mount)
-# System TMPDIR and removable media are often different filesystems.
-# Bare os.rename / os.replace do NOT cross mounts (Linux EXDEV).
-# Publish completed intermediates with shutil.move (rename same FS; copy+delete
-# on EXDEV). Prefer temps next to final output when writable.
-# Law: requirement-video-ffmpeg-pipeline, requirement-python-coding-style
-# =============================================================================
-
-
-def staging_dir_for(dest_path):
+    Identity, verb lists, and suffix sets are attributes of this class.
+    Collaborators arrive through the constructor. def main stays beside this class.
     """
-    General Purpose: Choose a directory for intermediate files on the same
-    filesystem as dest when possible (USB-safe). Falls back to system temp.
-    """
-    dest_path = Path(dest_path)
-    parent = dest_path.parent
-    try:
-        if parent.is_dir() and os.access(str(parent), os.W_OK):
-            return parent
-    except OSError:
-        pass
-    return Path(tempfile.gettempdir())
 
+    from . import __version__ as VERSION
 
-def make_temp_path(suffix, near_path):
-    """
-    General Purpose: Create a unique temp file path near near_path's directory
-    (same FS when writable). File is created empty and closed; caller overwrites.
-    """
-    d = staging_dir_for(near_path)
-    fd, name = tempfile.mkstemp(suffix=suffix, prefix="videojoin_", dir=str(d))
-    os.close(fd)
-    return Path(name)
-
-
-def promote_file(src, dest):
-    """
-    General Purpose: Publish src → dest using shutil.move (stdlib cross-FS safe).
-
-    Same mount: rename. Different mount (USB, etc.): copy then remove source.
-    Never use bare os.replace alone when src may live under system TMPDIR.
-    """
-    src = Path(src)
-    dest = Path(dest)
-    if not src.is_file():
-        raise FileNotFoundError("promote source missing: {}".format(src))
-    if dest.is_dir():
-        raise IsADirectoryError("promote dest must be a file path, not a directory: {}".format(dest))
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    # shutil.move: try rename; on EXDEV copy + unlink source
-    shutil.move(str(src), str(dest))
-
-
-def ensure_ffmpeg():
-    """
-    General Purpose: Fail closed if the system ffmpeg binary is not on PATH.
-    requirement-runtime-prerequisites / requirement-video-ffmpeg-pipeline
-    """
-    if shutil.which("ffmpeg") is None:
-        out_err("ERROR: ffmpeg not found on PATH.")
-        out_err("   Install FFmpeg and ensure `ffmpeg` is available.")
-        out_err("   → https://ffmpeg.org/download.html")
-        return False
-    try:
-        subprocess.run(
-            ["ffmpeg", "-version"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
-        out_err("ERROR: ffmpeg found but failed to run `-version`.")
-        return False
-    return True
-
-
-def get_video_files(directory=None):
-    """
-    General Purpose: List eligible video files in directory (cwd by default),
-    sorted case-insensitively by name.
-    """
-    root = Path(directory or ".")
-    return sorted(
-        [
-            f
-            for f in root.iterdir()
-            if f.is_file() and f.suffix.lower() in VIDEO_SUFFIXES
-        ],
-        key=lambda x: x.name.lower(),
+    APP_NAME = "VideoJoin"
+    CONSOLE_NAME = "video-join"
+    PRODUCT_VERBS = (
+        "help",
+        "version",
+        "about",
+        "hello",
+        "join",
+        "list-videos",
+        "self-install",
+        "version-check",
+        "self-update",
+        "self-uninstall",
     )
+    LIFECYCLE_VERBS = (
+        "version",
+        "self-install",
+        "version-check",
+        "self-update",
+        "self-uninstall",
+    )
+    VIDEO_SUFFIXES = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
+    OUTPUT_SUFFIXES = (".mp4", ".mkv", ".mov")
+    AUTHOR_NAME = "Wilgat Wong"
+    AUTHOR_EMAIL = "wilgat.wong@gmail.com"
+    HOMEPAGE = "https://github.com/Wilgat/VideoJoin"
+    LAST_UPDATE = "2026-10-04"
+    DOWNLOAD_URL = ""
+    BASIC_USAGE = "video-join join"
 
-
-def show_list(files):
-    """General Purpose: Print 1-based video list for interactive selection."""
-    out_info("\nFound video files:")
-    for i, f in enumerate(files, 1):
-        out_info("  {:2d}. {}".format(i, f.name))
-    out_info("")
-
-
-def choose(files, prompt):
-    """General Purpose: Prompt for 1-based index; re-prompt on invalid input."""
-    while True:
-        try:
-            idx = int(input(prompt)) - 1
-            if 0 <= idx < len(files):
-                return files[idx]
-            out_info("   → Enter 1–{}".format(len(files)))
-        except ValueError:
-            out_info("   → Please type a number")
-
-
-def create_file_list(file1, file2, list_path):
-    """
-    General Purpose: Write FFmpeg concat demuxer list with absolute POSIX paths.
-    """
-    p1 = Path(file1).resolve().as_posix()
-    p2 = Path(file2).resolve().as_posix()
-    with open(str(list_path), "w", encoding="utf-8") as f:
-        f.write("file '{}'\n".format(p1))
-        f.write("file '{}'\n".format(p2))
-
-
-def _file_ok(path):
-    """General Purpose: True if path is a non-empty regular file."""
-    try:
-        p = Path(path)
-        return p.is_file() and p.stat().st_size > 0
-    except OSError:
-        return False
-
-
-def _run_ffmpeg(cmd, label):
-    """
-    General Purpose: Run one FFmpeg command; return True on exit 0.
-    Does not modify the user's source media paths.
-    """
-    out_info(label)
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        err = (result.stderr or result.stdout or "").strip()
-        if err:
-            # Keep message short for users; full stderr not always needed.
-            tail = err[-500:] if len(err) > 500 else err
-            out_err("   ffmpeg: {}".format(tail.splitlines()[-1] if tail else "failed"))
-        return False
-    return True
-
-
-def join_videos(vid1, vid2, out_path):
-    """
-    General Purpose: Concatenate two videos to out_path (copy then re-encode).
-    Stages unique temps near out_path; publishes with shutil.move.
-    Returns True on success. Leaves sources intact.
-    Law: requirement-video-ffmpeg-pipeline, requirement-python-coding-style
-    """
-    vid1 = Path(vid1)
-    vid2 = Path(vid2)
-    out_path = Path(out_path)
-
-    if not vid1.is_file() or not vid2.is_file():
-        out_err("ERROR: one or both input videos are missing.")
-        return False
-
-    try:
-        if out_path.resolve() in (vid1.resolve(), vid2.resolve()):
-            out_err("ERROR: output path must not be one of the source files.")
-            return False
-    except OSError:
-        pass
-
-    list_path = None
-    copy_temp = None
-    reenc_temp = None
-    try:
-        list_path = make_temp_path(".txt", out_path)
-        copy_temp = make_temp_path(".mp4", out_path)
-        create_file_list(vid1, vid2, list_path)
-
-        cmd_copy = [
-            "ffmpeg",
-            "-y",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-f",
-            "concat",
-            "-safe",
-            "0",
-            "-i",
-            str(list_path),
-            "-c",
-            "copy",
-            "-map",
-            "0:v",
-            "-map",
-            "0:a?",
-            str(copy_temp),
-        ]
-        if _run_ffmpeg(cmd_copy, "Running ffmpeg (stream copy – no quality loss)…") and _file_ok(
-            copy_temp
-        ):
-            promote_file(copy_temp, out_path)
-            copy_temp = None  # moved away
-            out_info(
-                "\nSUCCESS! Perfectly joined with original sound → {}".format(out_path)
-            )
-            return True
-
-        out_info(
-            "Fast method failed (different resolutions/codec?). Trying safe re-encode..."
+    def __init__(self, logger=None):
+        self.logger = logger
+        if logger is not None:
+            logger.log_message("instantiated", component="Cli")
+        self.app_name = Cli.APP_NAME
+        self.version = Cli.VERSION
+        self.join = Join(
+            logger=logger,
+            video_suffixes=Cli.VIDEO_SUFFIXES,
+            output_suffixes=Cli.OUTPUT_SUFFIXES,
         )
-        reenc_temp = make_temp_path(".mp4", out_path)
-        cmd_reenc = [
-            "ffmpeg",
-            "-y",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-i",
-            str(vid1),
-            "-i",
-            str(vid2),
-            "-filter_complex",
-            "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "fast",
-            "-crf",
-            "18",
-            "-c:a",
-            "aac",
-            "-b:a",
-            "192k",
-            "-map",
-            "[v]",
-            "-map",
-            "[a]",
-            str(reenc_temp),
-        ]
-        if _run_ffmpeg(cmd_reenc, "Running ffmpeg (re-encode fallback)…") and _file_ok(
-            reenc_temp
-        ):
-            promote_file(reenc_temp, out_path)
-            reenc_temp = None
-            out_info("\nDone (with re-encode) → {}".format(out_path))
+        self.about = AboutPage(
+            CheckSystem(
+                logger=logger,
+                app_name=Cli.APP_NAME,
+                version=Cli.VERSION,
+                console_name=Cli.CONSOLE_NAME,
+            ),
+            Cli.APP_NAME,
+            Cli.VERSION,
+            Cli.AUTHOR_NAME,
+            Cli.LAST_UPDATE,
+            Cli.HOMEPAGE,
+            Cli.DOWNLOAD_URL,
+            Cli.BASIC_USAGE,
+            Cli.CONSOLE_NAME,
+            logger=logger,
+        )
+        self.self_manage = SelfManage(Cli.APP_NAME, Cli.VERSION, logger=logger)
+        self.tui = Tui(self, logger=logger)
+
+    @staticmethod
+    def stdout_is_tty():
+        """General Purpose: Whether the text screen can be drawn on this stdout."""
+        try:
+            return sys.stdout.isatty()
+        except Exception:
+            return False
+
+    @staticmethod
+    def opens_text_screen(argv):
+        """
+        General Purpose: Whether this argv draws the text screen.
+
+        The real parser has not run yet. This walk only decides is_quiet.
+        Help, version, hello, and the pip verbs do not draw the screen.
+        Empty argv, join, list-videos, and about do, when stdout is a terminal.
+        """
+        if argv is None:
+            argv = sys.argv[1:]
+        argv = list(argv)
+        if "--help" in argv or "-h" in argv or "--version" in argv:
+            return False
+        if not Cli.stdout_is_tty():
+            return False
+        verb = None
+        saw_force = False
+        for token in argv:
+            if token == "--force":
+                saw_force = True
+                continue
+            if token.startswith("-"):
+                return False
+            if verb is None:
+                verb = token
+                continue
+            return False
+        if saw_force and verb != "self-uninstall":
+            return False
+        if verb in ("join", "list-videos", "about"):
             return True
+        return verb is None
 
-        out_err("ERROR: join failed on both stream-copy and re-encode paths.")
-        return False
-    except (OSError, FileNotFoundError, IsADirectoryError) as exc:
-        out_err("Job failed: {}".format(exc))
-        err = getattr(exc, "errno", None)
-        if err in (getattr(os, "EXDEV", 18), 18):
-            out_err(
-                "   Hint: cross-filesystem publish failed. "
-                "Temps stage next to the output; publish uses shutil.move."
+    def report_error(self, message, nxt):
+        """User-visible failure plus the same fact on the logger when one exists."""
+        if self.logger is not None:
+            self.logger.log_message(
+                "{0} Next: {1}".format(message, nxt),
+                level="ERROR",
+                component="main",
             )
-        return False
-    finally:
-        for p in (list_path, copy_temp, reenc_temp):
-            if p is not None and Path(p).exists():
-                try:
-                    os.unlink(str(p))
-                except OSError:
-                    pass
+        print("ERROR: {0}".format(message), file=sys.stderr)
+        print("   Next: {0}".format(nxt), file=sys.stderr)
+        return 1
+
+    def build_parser(self):
+        """
+        General Purpose: One optional product verb. No file-operand flags.
+        help is also --help. --force belongs only to self-uninstall.
+        """
+        parser = argparse.ArgumentParser(
+            prog=Cli.CONSOLE_NAME,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description=(
+                "{0} — concatenate two videos in this folder.\n"
+                "With no arguments on a terminal, opens the text menu.\n"
+                "With no arguments and no terminal, prints this help and stops.\n"
+                "Product verbs: help, version, about, hello, join, list-videos,\n"
+                "self-install, version-check, self-update, self-uninstall.\n"
+                "help prints this usage. version prints the installed version.\n"
+                "about and hello print a page. hello does not draw the menu.\n"
+                "join asks for two videos in this folder and an output name.\n"
+                "list-videos lists eligible videos and does not join.\n"
+                "version-check runs: python -m pip index versions VideoJoin\n"
+                "self-update runs: python -m pip install --upgrade VideoJoin\n"
+                "self-install runs: python -m pip install VideoJoin\n"
+                "self-uninstall runs: python -m pip uninstall -y VideoJoin\n"
+                "and needs --force. Empty arguments do not install or update.\n"
+                "Formats: .mp4 .mov .mkv .avi .m4v."
+                .format(Cli.APP_NAME)
+            ),
+        )
+        parser.add_argument(
+            "verb",
+            nargs="?",
+            default=None,
+            metavar="verb",
+            help=(
+                "Product verb: help, version, about, hello, join, list-videos, "
+                "self-install, version-check, self-update, or self-uninstall"
+            ),
+        )
+        parser.add_argument(
+            "--version",
+            action="version",
+            version="{0} {1}".format(Cli.APP_NAME, Cli.VERSION),
+        )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Confirm self-uninstall. Required on the command line.",
+        )
+        return parser
+
+    def _page(self, text):
+        print(text)
+        return 0
+
+    def _verb_hello(self):
+        """Hello from this package, then the help next step. Does not draw the menu."""
+        print(self.tui.hello_text())
+        print("Next: {0} help".format(Cli.CONSOLE_NAME))
+        return 0
+
+    def _unknown_verb(self, token):
+        names = ", ".join(Cli.PRODUCT_VERBS)
+        return self.report_error(
+            "Unknown verb '{0}'.".format(token),
+            "{0} help — verbs: {1}".format(Cli.CONSOLE_NAME, names),
+        )
+
+    def _print_video_list(self):
+        """Eligible names on the console. Does not join and does not draw the screen."""
+        print(self.tui._video_listing())
+        return 0
+
+    def _dispatch(self, args):
+        """One product verb, the front board, or a fail-closed stop."""
+        verb = args.verb
+        if args.force and verb != "self-uninstall":
+            return self.report_error(
+                "--force is only for self-uninstall.",
+                "{0} self-uninstall --force".format(Cli.CONSOLE_NAME),
+            )
+        if verb == "about":
+            result = self.tui.about_on_screen()
+            if isinstance(result, int):
+                return result
+            return self._page(result)
+        if verb == "hello":
+            return self._verb_hello()
+        if verb == "version":
+            return self._page(self.self_manage.local_version())
+        if verb == "self-uninstall":
+            if not args.force:
+                return self.report_error(
+                    "self-uninstall removes this package with pip.",
+                    "{0} self-uninstall --force".format(Cli.CONSOLE_NAME),
+                )
+            return self.self_manage.emit(verb)
+        if verb in ("version-check", "self-update", "self-install"):
+            return self.self_manage.emit(verb)
+        if verb == "join":
+            if not self.stdout_is_tty():
+                return self.report_error(
+                    "No terminal for join. Use a terminal.",
+                    "{0} join".format(Cli.CONSOLE_NAME),
+                )
+            return self.tui.open_direct("join")
+        if verb == "list-videos":
+            result = self.tui.list_on_screen()
+            if isinstance(result, int):
+                return result
+            return self._page(result)
+        if verb is not None:
+            return self._unknown_verb(verb)
+        if not self.stdout_is_tty():
+            self.build_parser().print_help()
+            return 0
+        action = self.tui.open_text_menu()
+        if action == "missing":
+            return 1
+        return 0
+
+    def run(self, argv=None):
+        """One job. def main already wrote ChronicleLogger(...) and passed it in."""
+        if argv is None:
+            argv = sys.argv[1:]
+        argv = list(argv)
+        parser = self.build_parser()
+        try:
+            args = parser.parse_args(argv)
+        except SystemExit as exc:
+            code = exc.code
+            if code is None or code == 0:
+                return 0
+            return int(code)
+        if args.verb == "help":
+            parser.print_help()
+            return 0
+        return self._dispatch(args)
 
 
-def resolve_output_name(vid1, vid2, raw_name):
-    """
-    General Purpose: Build output filename from user input or default pattern.
-    """
-    default_name = "{} + {}.mp4".format(vid1.stem, vid2.stem)
-    out_name = (raw_name or "").strip() or default_name
-    lower = out_name.lower()
-    if not lower.endswith(OUTPUT_SUFFIXES):
-        out_name += ".mp4"
-    return Path(out_name)
+def main(argv=None, basedir="", logdir=""):
+    """This function instantiates ChronicleLogger. The statement below is the construct."""
+    if argv is None:
+        argv = sys.argv[1:]
+    argv = list(argv)
+    try:
+        from ChronicleLogger import ChronicleLogger
+    except ImportError:
+        sys.stderr.write(
+            'ChronicleLogger is required. Next step: python -m pip install "ChronicleLogger>=1.3.1"\n'
+        )
+        return 1
 
+    from VideoJoin import __version__
 
-def main():
-    """
-    General Purpose: Interactive two-video join session (Type N empty argv).
-    Law: requirement-python-cli-interface, requirement-domain-videojoin
-    """
-    if not ensure_ffmpeg():
-        sys.exit(1)
+    screen = Cli.opens_text_screen(argv)
+    logger = ChronicleLogger(
+        logname="VideoJoin",
+        is_quiet=screen,
+        basedir=basedir,
+        logdir=logdir,
+    )
+    appname = logger.logName()
+    resolved_base = logger.baseDir()
+    logger.logDir()
 
-    out_info("Video Joiner – WITH ORIGINAL AUDIO (using ffmpeg)\n")
-    out_info("{} {}".format(APP_NAME, _PKG_VERSION))
+    if logger.isDebug():
+        logger.log_message(
+            "{0} v{1} ({2})".format(appname, __version__, __file__),
+            component="main",
+        )
+        logger.log_message(
+            "Using {0}".format(ChronicleLogger.class_version()),
+            component="main",
+        )
+        logger.log_message(
+            "Base {0}".format(resolved_base),
+            level="DEBUG",
+            component="main",
+        )
+        logger.log_message("debug mode", component="main")
 
-    files = get_video_files()
-    if len(files) < 2:
-        out_err("Need at least 2 video files in this folder!")
-        sys.exit(1)
-
-    show_list(files)
-    vid1 = choose(files, "Choose FIRST video → ")
-
-    remaining = [f for f in files if f != vid1]
-    show_list(remaining)
-    vid2 = choose(remaining, "Choose SECOND video → ")
-
-    default_name = "{} + {}.mp4".format(vid1.stem, vid2.stem)
-    raw = input("\nOutput filename [{}]: ".format(default_name)).strip()
-    out_path = resolve_output_name(vid1, vid2, raw)
-
-    out_info("\nJoining with perfect audio sync:")
-    out_info("   {}".format(vid1.name))
-    out_info(" + {}".format(vid2.name))
-    out_info(" → {}\n".format(out_path))
-    out_info("   Staging dir → {}".format(staging_dir_for(out_path)))
-
-    ok = join_videos(vid1, vid2, out_path)
-    if not ok:
-        sys.exit(1)
+    app = Cli(logger)
+    return app.run(argv)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
