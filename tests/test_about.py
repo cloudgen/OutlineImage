@@ -20,17 +20,17 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from VideoJoin.cli import Cli  # noqa: E402
+from OutlineImage.cli import Cli  # noqa: E402
 
 
 class TestAbout(unittest.TestCase):
     def _cli(self):
-        from VideoJoin import cli
+        from OutlineImage import cli
 
         return cli
 
     def _page(self):
-        from VideoJoin.cli import Cli
+        from OutlineImage.cli import Cli
 
         return Cli().about
 
@@ -66,7 +66,8 @@ class TestAbout(unittest.TestCase):
             "TTY / Interactive:",
             "Basic Usage:",
             "Please visit our homepage:",
-            "VideoJoin ({}) by {} on {}".format(
+            "{} ({}) by {} on {}".format(
+                cli.Cli.APP_NAME,
                 cli.Cli.VERSION,
                 cli.Cli.AUTHOR_NAME,
                 cli.Cli.LAST_UPDATE,
@@ -74,12 +75,16 @@ class TestAbout(unittest.TestCase):
         ):
             self.assertIn(label, text)
         self.assertIn(
-            "Domain: Concatenate two local videos with FFmpeg (copy, then fallback)",
+            "Domain: Write a detailed outline for each image in a folder",
             text,
         )
-        self.assertIn("Runtime tools: FFmpeg (copy, then re-encode)", text)
-        self.assertIn("Entry points: video-join, python -m VideoJoin", text)
-        self.assertIn("video-join join", text)
+        self.assertIn("Runtime tools: none", text)
+        self.assertIn(
+            "Entry points: {0}, python -m {1}".format(Cli.CONSOLE_NAME, Cli.APP_NAME),
+            text,
+        )
+        self.assertIn(Cli.BASIC_USAGE, text)
+        self.assertNotIn("FFmpeg", text)
         self.assertNotIn("ffmpeg is on PATH", text)
         self.assertNotIn("python -m pip install", text)
         self.assertNotIn("curl -fsSL", text)
@@ -93,11 +98,13 @@ class TestAbout(unittest.TestCase):
 
     def test_check_system_stamp_and_field_order(self):
         """TP-ABOUT-02: stamp, CHECK SYSTEM header, and field order."""
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         when = datetime.datetime(2026, 10, 1, 11, 16, 23, 700590)
         rows = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME).check_system_lines(now=when)
-        self.assertTrue(rows[0].startswith("2026-10-01 11:16:23.700590 VideoJoin(v"))
+        self.assertTrue(rows[0].startswith(
+            "2026-10-01 11:16:23.700590 {0}(v".format(Cli.APP_NAME)
+        ))
         self.assertTrue(rows[0].endswith("  [CHECK SYSTEM]:"))
         self.assertEqual(rows[1], "  Now checking your operation system!")
         labels = [row.strip().split(":", 1)[0] for row in rows[2:]]
@@ -132,7 +139,7 @@ class TestAbout(unittest.TestCase):
     def test_about_box_is_a_rectangle(self):
         """TP-ABOUT-03: the star box is one rectangle."""
         box = self._page().about_box_lines(
-            usage="video-join join",
+            usage="video-join hello",
             location="/tmp/video-join",
             kind="global",
             homepage="https://example.test/VideoJoin",
@@ -167,7 +174,7 @@ class TestAbout(unittest.TestCase):
 
     def test_compiler_arch_and_libc_labels(self):
         """TP-ABOUT-05: compiler token, arch map, and libc token."""
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         py, lib = host.parse_sys_version(
@@ -204,7 +211,7 @@ class TestAbout(unittest.TestCase):
         self.assertEqual(page.install_kind(cli.__file__), "uninstalled")
         self.assertTrue(page._is_source_checkout(os.path.realpath(cli.__file__)))
         home = os.path.realpath(os.path.expanduser("~"))
-        local_script = os.path.join(home, ".local", "bin", "video-join")
+        local_script = os.path.join(home, ".local", "bin", Cli.CONSOLE_NAME)
         self.assertEqual(page.install_kind(local_script), "local")
         local_pkg = os.path.join(
             home, ".pyenv", "versions", "3.14.7", "lib", "python3.14",
@@ -221,8 +228,8 @@ class TestAbout(unittest.TestCase):
 
     def test_docker_marker_and_missing_command(self):
         """TP-ABOUT-07: docker marker file; missing tool location stays blank."""
-        import VideoJoin.check_system as check_mod
-        from VideoJoin.check_system import CheckSystem
+        import OutlineImage.check_system as check_mod
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         self.assertFalse(host.inside_docker(marker="/tmp/videojoin-no-such-dockerenv"))
@@ -305,7 +312,7 @@ class TestAbout(unittest.TestCase):
 
     def test_pyenv_paths_stay_inside_the_root(self):
         """TP-ABOUT-09: under pyenv, bin/pyenv and interpreters inside the root."""
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         with tempfile.TemporaryDirectory() as tmp:
@@ -382,8 +389,8 @@ class TestAbout(unittest.TestCase):
 
     def test_named_root_without_launcher_is_not_under_pyenv(self):
         """TP-ABOUT-10: a PYENV_ROOT with no bin/pyenv stays on shutil.which."""
-        import VideoJoin.check_system as check_mod
-        from VideoJoin.check_system import CheckSystem
+        import OutlineImage.check_system as check_mod
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         found = {
@@ -468,7 +475,7 @@ class TestAbout(unittest.TestCase):
 
     def test_conda_paths_stay_inside_the_prefix(self):
         """TP-ABOUT-11: under conda, bin/conda and interpreters inside the prefix."""
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         with tempfile.TemporaryDirectory() as tmp:
@@ -544,8 +551,8 @@ class TestAbout(unittest.TestCase):
 
     def test_named_exe_without_launcher_is_not_under_conda(self):
         """TP-ABOUT-12: a CONDA_EXE outside bin or condabin stays on shutil.which."""
-        import VideoJoin.check_system as check_mod
-        from VideoJoin.check_system import CheckSystem
+        import OutlineImage.check_system as check_mod
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         found = {
@@ -612,7 +619,7 @@ class TestAbout(unittest.TestCase):
         """TP-ABOUT-16: in_venv, in_pyenv, and in_conda are the logger methods."""
         import inspect
 
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         class _Env:
             """Stand-in logger. The check calls these three methods."""
@@ -670,7 +677,7 @@ class TestAbout(unittest.TestCase):
             self.assertIn(call_name, body)
             self.assertNotIn(banned, body)
 
-        ship = (ROOT / "src" / "VideoJoin" / "check_system.py").read_text(encoding="utf-8")
+        ship = (ROOT / "src" / "OutlineImage" / "check_system.py").read_text(encoding="utf-8")
         for banned_call in ("pyenvVenv", "pyenv_versions", "condaPath", "conda_env_list"):
             self.assertNotIn(banned_call, ship)
 
@@ -747,9 +754,9 @@ class TestAbout(unittest.TestCase):
         """About host check: CheckSystem owns the methods. cli.py does not."""
         import inspect
 
-        from VideoJoin import cli
-        from VideoJoin.about_page import AboutPage
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage import cli
+        from OutlineImage.about_page import AboutPage
+        from OutlineImage.check_system import CheckSystem
 
         names = (
             "check_system_lines",
@@ -790,9 +797,9 @@ class TestAbout(unittest.TestCase):
         self.assertTrue(inspect.isclass(CheckSystem))
         self.assertEqual(
             Path(inspect.getfile(CheckSystem)).resolve(),
-            (ROOT / "src" / "VideoJoin" / "check_system.py").resolve(),
+            (ROOT / "src" / "OutlineImage" / "check_system.py").resolve(),
         )
-        ship = (ROOT / "src" / "VideoJoin" / "cli.py").read_text(encoding="utf-8")
+        ship = (ROOT / "src" / "OutlineImage" / "cli.py").read_text(encoding="utf-8")
         for name in names:
             self.assertTrue(inspect.isfunction(inspect.getattr_static(CheckSystem, name)), name)
             self.assertFalse(inspect.isfunction(getattr(cli, name, None)), name)
@@ -803,7 +810,7 @@ class TestAbout(unittest.TestCase):
         self.assertIn("self.check", about)
         self.assertIn("self_location", box)
         self.assertIn("self.check", box)
-        page = (ROOT / "src" / "VideoJoin" / "about_page.py").read_text(encoding="utf-8")
+        page = (ROOT / "src" / "OutlineImage" / "about_page.py").read_text(encoding="utf-8")
         self.assertIn("CheckSystem", page)
         self.assertIn("def framework_about(", page)
         self.assertIn("def about_box_lines(", page)
@@ -812,7 +819,7 @@ class TestAbout(unittest.TestCase):
 
     def test_run_lines_name_pid_cache_persistence_and_tty(self):
         """TP-ABOUT-13: run lines after Location; the check does not create them."""
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         created = []
@@ -851,7 +858,7 @@ class TestAbout(unittest.TestCase):
         self.assertIn("    Cache folder (1st fallback): {}".format(first), text)
         self.assertIn("    Cache folder (2nd fallback): {}".format(second), text)
         self.assertIn("    Persistence storage: {}".format(store), text)
-        self.assertIn("cache-VideoJoin-", preferred)
+        self.assertIn("cache-{0}-".format(Cli.APP_NAME), preferred)
         self.assertTrue(preferred.startswith("/dev/shm/cache/"))
         self.assertTrue(first.startswith("/tmp/cache/"))
         self.assertNotIn("\n    PID:", text.split("    Location:", 1)[0])
@@ -873,7 +880,7 @@ class TestAbout(unittest.TestCase):
 
     def test_cache_used_follows_shm_then_tmp_then_home(self):
         """TP-ABOUT-14: used follows /dev/shm, then /tmp, then the 2nd fallback."""
-        from VideoJoin.check_system import CheckSystem
+        from OutlineImage.check_system import CheckSystem
 
         host = CheckSystem(app_name=Cli.APP_NAME, version=Cli.VERSION, console_name=Cli.CONSOLE_NAME)
         home = tempfile.mkdtemp(prefix="vs-about-home-")
@@ -903,7 +910,7 @@ class TestAbout(unittest.TestCase):
             preferred = host.cache_folder_preferred()
             self.assertTrue(
                 preferred.endswith(
-                    "cache-VideoJoin-demo-{}".format(host.process_id())
+                    "cache-{0}-demo-{1}".format(Cli.APP_NAME, host.process_id())
                 )
             )
 
@@ -929,13 +936,13 @@ class TestAbout(unittest.TestCase):
             self.assertEqual(host.cache_folder_used(), second)
             self.assertTrue(
                 second.endswith(
-                    "/.cache/cache-VideoJoin-{}".format(host.process_id())
+                    "/.cache/cache-{0}-{1}".format(Cli.APP_NAME, host.process_id())
                 )
             )
             self.assertNotIn("demo", os.path.basename(second))
             self.assertEqual(
                 host.persistence_storage(),
-                os.path.join(home, ".local", "VideoJoin"),
+                os.path.join(home, ".local", Cli.APP_NAME),
             )
             self.assertFalse(os.path.exists(second))
 
@@ -944,9 +951,9 @@ class TestAbout(unittest.TestCase):
             getpass.getuser = lambda: ""
             bare = host.cache_folder_preferred()
             self.assertTrue(
-                bare.endswith("cache-VideoJoin-{}".format(host.process_id()))
+                bare.endswith("cache-{0}-{1}".format(Cli.APP_NAME, host.process_id()))
             )
-            self.assertNotIn("cache-VideoJoin--", bare)
+            self.assertNotIn("cache-{0}--".format(Cli.APP_NAME), bare)
 
             os.environ["HOME"] = "   "
             getpass.getuser = real_getuser
@@ -980,15 +987,15 @@ class TestAbout(unittest.TestCase):
         """TP-ABOUT-08: a long about page scrolls; a one-line result still closes."""
         import curses
 
-        from VideoJoin.menu_model import MenuModel
-        from VideoJoin.menu_painter import MenuPainter
+        from OutlineImage.menu_model import MenuModel
+        from OutlineImage.menu_painter import MenuPainter
 
         home = tempfile.mkdtemp(prefix="vj-about-scroll-")
         self.addCleanup(shutil.rmtree, home, ignore_errors=True)
         saved_home = os.environ.get("HOME")
-        saved_lang = os.environ.get("VIDEOJOIN_LANG")
+        saved_lang = os.environ.get("OUTLINEIMAGE_LANG")
         os.environ["HOME"] = home
-        os.environ.pop("VIDEOJOIN_LANG", None)
+        os.environ.pop("OUTLINEIMAGE_LANG", None)
         try:
             painter = MenuPainter(home=home)
             model = MenuModel(painter=painter)
@@ -1022,9 +1029,9 @@ class TestAbout(unittest.TestCase):
             else:
                 os.environ["HOME"] = saved_home
             if saved_lang is None:
-                os.environ.pop("VIDEOJOIN_LANG", None)
+                os.environ.pop("OUTLINEIMAGE_LANG", None)
             else:
-                os.environ["VIDEOJOIN_LANG"] = saved_lang
+                os.environ["OUTLINEIMAGE_LANG"] = saved_lang
 
 
 

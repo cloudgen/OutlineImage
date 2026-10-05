@@ -95,7 +95,7 @@ class MenuPainter:
     MIN_HEIGHT = MIN_MENU_ABOVE + CHROME_ROWS
     MIN_PLACEABLE = 2 + len(" " + INPUT_MARK) + 1
     MENU_ROWS = (
-        (1, "join", "pick two videos in this folder and concatenate", "join"),
+        (1, "outline", "convert images in a chosen folder to outlines", "outline"),
         (3, "system-log", "view, clear, and the log folder", "system-log"),
         (4, "language", "display language for this menu", "language"),
         (8, "self-management", "version, about, and pip lifecycle", "self-management"),
@@ -103,7 +103,7 @@ class MenuPainter:
     )
     SELF_ROWS = (
         (82, "version", "show the installed version", "version"),
-        (83, "about", "version, FFmpeg, and this computer", "about"),
+        (83, "about", "version and this computer", "about"),
         (84, "version-check", "compare this install with pip", "version-check"),
         (85, "self-update", "upgrade this package with pip", "self-update"),
         (86, "self-uninstall", "remove this package with pip", "self-uninstall"),
@@ -120,9 +120,7 @@ class MenuPainter:
         "help": "help",
         "version": "version",
         "about": "about",
-        "hello": "hello",
-        "join": "join",
-        "list-videos": "list-videos",
+        "outline": "outline",
         "self-install": "self-install",
         "version-check": "version-check",
         "self-update": "self-update",
@@ -148,6 +146,8 @@ class MenuPainter:
         Back follow the language. The language board prints endonyms.
         """
         language = self.language
+        if layer == "folders":
+            return self.folder_rows()
         if layer == "lang":
             rows = []
             for code, endonym, number in language.CODES:
@@ -168,6 +168,37 @@ class MenuPainter:
                 kind,
             ))
         return tuple(built)
+
+    def folder_rows(self) -> tuple:
+        """Row 1's board: current folder, each child folder, and Back.
+
+        The child names are directory entries. They are not translated.
+        """
+        from .outline import list_subfolders
+
+        language = self.language
+        rows = [(
+            1,
+            "current",
+            language.text("current_long"),
+            "pick:.",
+        )]
+        number = 2
+        for name in list_subfolders(os.getcwd()):
+            rows.append((
+                number,
+                name,
+                language.text("subfolder_long"),
+                "pick:" + name,
+            ))
+            number += 1
+        rows.append((
+            0,
+            language.row_short("back", "Back"),
+            language.row_long("back", "return to the main menu"),
+            "back",
+        ))
+        return tuple(rows)
 
     def path_label(self) -> str:
         """The path-line word for the selected menu language."""
@@ -214,6 +245,8 @@ class MenuPainter:
             return language.text("title_log")
         if layer == "lang":
             return language.text("title_language")
+        if layer == "folders":
+            return language.text("title_folders")
         return language.text("title_main")
 
     def row_parts(self, rows: tuple) -> list[tuple[str, str, str, str]]:

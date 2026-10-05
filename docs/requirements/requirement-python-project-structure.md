@@ -6,33 +6,33 @@
 
 ## 1. Purpose
 
-Define the repository layout and the package structure for VideoJoin: where source, packaging, and requirement law live, and which modules exist today versus which modules the class map names.
+Define the repository layout and the package structure for OutlineImage: where source, packaging, and requirement law live, and which modules exist today versus which modules the class map names.
 
 ### 1.1 Human-facing
 
-**In one sentence:** The installable code lives in `src/VideoJoin/`, and today that folder still holds three modules.
+**In one sentence:** The installable code lives in `src/OutlineImage/`, and today that folder still holds three modules.
 
 | Box | Meaning | Example |
 |-----|---------|---------|
-| You / this login | Maintainer looking for the program | Open `src/VideoJoin/cli.py` |
+| You / this login | Maintainer looking for the program | Open `src/OutlineImage/cli.py` |
 | The other role | The class map | `requirement-python-oop` names the later files. They are not on disk yet |
 | Not this file | What the menu shows, and how two videos are concatenated | TUI, domain, and pipeline requirements |
 
 | Includes | Excludes |
 |----------|----------|
-| `src/VideoJoin/__init__.py`, `__main__.py`, and `cli.py` as the running package | A second installable package name |
+| `src/OutlineImage/__init__.py`, `__main__.py`, and `cli.py` as the running package | A second installable package name |
 | The class files as the allowed end state, landed by a later implement order | Treating those files as already required on disk |
 | Root `pyproject.toml`, root `README.md`, root `CHANGELOG.md`, and `docs/requirements/` | Deleted design notes listed as if they were still present |
 
 | Surface | What you open | What for |
 |---------|---------------|----------|
-| `src/VideoJoin/` | The package | Version, module entry, and the running session |
+| `src/OutlineImage/` | The package | Version, module entry, and the running session |
 | `pyproject.toml` | Packaging | Name, version, console script |
 | `docs/requirements/index.md` | Registry | Which requirement files are Active |
 
 | You do… | What it means | What you type |
 |---------|---------------|---------------|
-| Run from a checkout | The module entry calls `main` in `cli.py`. | `python -m VideoJoin` |
+| Run from a checkout | The module entry calls `main` in `cli.py`. | `python -m OutlineImage` |
 | Look for the menu classes | They are named by the OOP requirement. They are not in the running tree. | Read `requirement-python-oop` |
 | Read the product history | Use the changelog at the repository root. | `CHANGELOG.md` |
 
@@ -40,9 +40,9 @@ Define the repository layout and the package structure for VideoJoin: where sour
 
 ### 2.1 Source package layout
 
-1. **MUST** keep the installable package under `src/VideoJoin/`.
-2. The running package **MUST** include `__init__.py` (version export), `__main__.py` (module entry), and `cli.py` (the running CLI and join session).
-3. The allowed end state adds the modules named by `requirement-python-oop` (`tui.py`, `menu_painter.py`, `menu_model.py`, `menu_session.py`, `menu_language.py`, `system_log.py`, `self_management.py`, `check_system.py`, `about_page.py`, `join.py`). Those files are not required on disk until an implement order lands them. After that order, `cli.py` holds class `Cli` and `def main`, and it does not hold the other classes’ methods.
+1. **MUST** keep the installable package under `src/OutlineImage/`.
+2. The running package **MUST** include `__init__.py` (version export), `__main__.py` (module entry), `cli.py` (class `Cli` and `def main`), and `outline.py` (the conversion functions).
+3. The allowed end state adds the modules named by `requirement-python-oop` (`tui.py`, `menu_painter.py`, `menu_model.py`, `menu_session.py`, `menu_language.py`, `system_log.py`, `self_management.py`, `check_system.py`, `about_page.py`). `join.py` is not part of that set. `cli.py` holds class `Cli` and `def main`, and it does not hold the other classes’ methods. Root `convert.py` is the checkout entry. It is not a second package.
 4. **MUST NOT** scatter a second installable package name that contradicts the packaging SSOT.
 
 ### 2.2 Project root layout
@@ -51,13 +51,13 @@ Define the repository layout and the package structure for VideoJoin: where sour
 6. **MUST** keep product user docs at root `README.md`. Sections, badges, and pictures in that document are `requirement-python-readme`.
 7. **MUST** keep the product changelog at root `CHANGELOG.md`.
 8. **MUST** keep specialized product law under `docs/requirements/` with the `requirement-` prefix and the registry `index.md`.
-9. **MUST NOT** list a deleted design note as a present file. `docs/CHANGELOG.md`, `docs/VideoJoin-spec.md`, and `docs/folder-structure.md` are not in the tree.
+9. **MUST NOT** list a deleted design note as a present file. `docs/CHANGELOG.md`, `docs/OutlineImage-spec.md`, and `docs/folder-structure.md` are not in the tree.
 
 ### 2.3 Generated / non-source
 
 10. **MUST NOT** commit `build/` or `dist/` artifacts as the product source of truth.
 11. Egg-info, `__pycache__`, and compiled `.so` **MUST** remain ignore-friendly.
-12. Optional Cython or `build.sh` tooling **MAY** exist as maintainer tooling. It **MUST NOT** replace `src/VideoJoin` as the runtime package.
+12. Optional Cython or `build.sh` tooling **MAY** exist as maintainer tooling. It **MUST NOT** replace `src/OutlineImage` as the runtime package.
 
 ### 2.4 Requirements surface discipline
 
@@ -69,18 +69,20 @@ Define the repository layout and the package structure for VideoJoin: where sour
 
 | Path | Role |
 |------|------|
-| `src/VideoJoin/` | Installable package |
-| `src/VideoJoin/__init__.py` | `__version__` (`1.0.5`) |
-| `src/VideoJoin/__main__.py` | Module entry. Imports `main` from `cli` |
-| `src/VideoJoin/cli.py` | Running CLI and join session. End state: class `Cli` and `def main` |
+| `src/OutlineImage/` | Installable package |
+| `src/OutlineImage/__init__.py` | `__version__` (`1.0.0`) |
+| `src/OutlineImage/__main__.py` | Module entry. Imports `main` from `cli` |
+| `src/OutlineImage/cli.py` | Class `Cli` and `def main` |
+| `src/OutlineImage/outline.py` | Conversion functions. `./convert.py` calls `outline.main` |
+| `convert.py` | Checkout entry at the repository root |
 | `pyproject.toml` | Packaging SSOT |
 | `build.sh` | Maintainer build helper |
 | `docs/requirements/` | Product law |
 | `CHANGELOG.md` | Product changelog at the repository root |
-| `tests/` | Proof. Today the tree holds `tests/README.md` only. Suites are not law |
+| `tests/` | Proof. `tests/run.sh` discovers the suite. Suites are not law |
 | `README.md` | User documentation |
 
-The class modules named in rule 3 are absent. That absence matches this file. It does not match the allowed end state in `requirement-python-oop`.
+The class modules named in rule 3 are on disk, together with `outline.py`. `join.py` is not.
 
 ### 2.6 Why This Requirement Exists (CIAO)
 
@@ -90,7 +92,7 @@ The class modules named in rule 3 are absent. That absence matches this file. It
 
 ## Under command line for normal user only
 
-On Termux, Git Bash, Windows cmd, or the same class, the package is the normal user’s `video-join`. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user to lay out the package or to start it. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`.
+On Termux, Git Bash, Windows cmd, or the same class, the package is the normal user’s `outline-image`. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user to lay out the package or to start it. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`.
 
 ## 3. Design Principles (CIAO / CIAO-Lite)
 
@@ -103,12 +105,12 @@ On Termux, Git Bash, Windows cmd, or the same class, the package is the normal u
 
 **Future AI assistants, Grok, or maintainers MUST NOT**:
 
-1. Move the installable package out of `src/VideoJoin/` without a packaging update.
+1. Move the installable package out of `src/OutlineImage/` without a packaging update.
 2. Delete the `docs/requirements/index.md` discipline.
 3. Commit secrets under `src/` or `docs/requirements/`.
 4. Cite a template or a skill from product source as product law.
 5. Treat a design note as a second law SSOT over an Active requirement.
-6. List `docs/CHANGELOG.md`, `docs/VideoJoin-spec.md`, or `docs/folder-structure.md` as present.
+6. List `docs/CHANGELOG.md`, `docs/OutlineImage-spec.md`, or `docs/folder-structure.md` as present.
 7. Require the OOP class files on disk before an implement order, or keep `cli.py` as the permanent home of every other class after that order.
 
 **Violating this rule is a critical structure regression.**
@@ -117,7 +119,7 @@ On Termux, Git Bash, Windows cmd, or the same class, the package is the normal u
 
 | ID | Criterion |
 |----|-----------|
-| AC-1 | The package lives under `src/VideoJoin/` |
+| AC-1 | The package lives under `src/OutlineImage/` |
 | AC-2 | Root `pyproject.toml` is present |
 | AC-3 | Requirements live under `docs/requirements/` with an index |
 | AC-4 | Generated `build/` and `dist/` are not the source SSOT |
@@ -149,7 +151,7 @@ On Termux, Git Bash, Windows cmd, or the same class, the package is the normal u
 
 | Date | Status | Note |
 |------|--------|------|
-| 2026-08-09 | Active 1.0.0 | Initial project structure law for VideoJoin |
+| 2026-08-09 | Active 1.0.0 | Initial project structure law for OutlineImage |
 | 2026-10-04 | Active 1.1.0 | Running tree is three modules. Target modules are the OOP map. Deleted design-note paths are not listed as present. Changelog is root `CHANGELOG.md` |
 | 2026-10-04 | Active 1.1.1 | Sections, badges, and pictures in root `README.md` are `requirement-python-readme` |
 | 2026-10-04 | Active 1.1.2 | Allowed end state names `check_system.py`. `__version__` is **1.0.5** |

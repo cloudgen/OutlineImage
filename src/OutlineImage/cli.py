@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # =============================================================================
-# VideoJoin CLI — text menu and typed verbs.
+# OutlineImage CLI — text menu and typed verbs.
 # Law keys: requirement-python-cli-interface, requirement-python-cli-logging,
 #           requirement-python-tui, requirement-python-oop,
-#           requirement-python-about, requirement-domain-videojoin,
+#           requirement-python-about, requirement-domain-outlineimage,
 #           requirement-python-error-handling, requirement-python-coding-style,
 #           requirement-runtime-prerequisites
+# Outlines are written for images in one chosen folder. There is no media join.
 # CIAO-Lite: Caution • Intentional • Anti-fragile • Over-protect
 # def main writes ChronicleLogger(...). This module does not construct it
 # at import time and does not re-export it.
@@ -17,7 +18,6 @@ import sys
 
 from .about_page import AboutPage
 from .check_system import CheckSystem
-from .join import Join
 from .self_management import SelfManage
 from .tui import Tui
 
@@ -31,15 +31,13 @@ class Cli:
 
     from . import __version__ as VERSION
 
-    APP_NAME = "VideoJoin"
-    CONSOLE_NAME = "video-join"
+    APP_NAME = "OutlineImage"
+    CONSOLE_NAME = "outline-image"
     PRODUCT_VERBS = (
         "help",
         "version",
         "about",
-        "hello",
-        "join",
-        "list-videos",
+        "outline",
         "self-install",
         "version-check",
         "self-update",
@@ -52,14 +50,13 @@ class Cli:
         "self-update",
         "self-uninstall",
     )
-    VIDEO_SUFFIXES = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
-    OUTPUT_SUFFIXES = (".mp4", ".mkv", ".mov")
     AUTHOR_NAME = "Wilgat Wong"
     AUTHOR_EMAIL = "wilgat.wong@gmail.com"
-    HOMEPAGE = "https://github.com/Wilgat/VideoJoin"
-    LAST_UPDATE = "2026-10-04"
+    HOMEPAGE = "https://github.com/cloudgen/OutlineImage"
+    LAST_UPDATE = "2026-10-05"
     DOWNLOAD_URL = ""
-    BASIC_USAGE = "video-join join"
+    BASIC_USAGE = "outline-image outline"
+    DOMAIN_SENTENCE = "Write a detailed outline for each image in a folder"
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -67,11 +64,6 @@ class Cli:
             logger.log_message("instantiated", component="Cli")
         self.app_name = Cli.APP_NAME
         self.version = Cli.VERSION
-        self.join = Join(
-            logger=logger,
-            video_suffixes=Cli.VIDEO_SUFFIXES,
-            output_suffixes=Cli.OUTPUT_SUFFIXES,
-        )
         self.about = AboutPage(
             CheckSystem(
                 logger=logger,
@@ -106,8 +98,9 @@ class Cli:
         General Purpose: Whether this argv draws the text screen.
 
         The real parser has not run yet. This walk only decides is_quiet.
-        Help, version, hello, and the pip verbs do not draw the screen.
-        Empty argv, join, list-videos, and about do, when stdout is a terminal.
+        Help, version, outline, and the pip verbs do not draw the screen.
+        Empty argv and about do, when stdout is a terminal.
+        outline converts a folder and does not draw the screen.
         """
         if argv is None:
             argv = sys.argv[1:]
@@ -130,7 +123,7 @@ class Cli:
             return False
         if saw_force and verb != "self-uninstall":
             return False
-        if verb in ("join", "list-videos", "about"):
+        if verb == "about":
             return True
         return verb is None
 
@@ -155,21 +148,21 @@ class Cli:
             prog=Cli.CONSOLE_NAME,
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description=(
-                "{0} — concatenate two videos in this folder.\n"
+                "{0} — write a detailed outline image for each picture in a folder.\n"
                 "With no arguments on a terminal, opens the text menu.\n"
                 "With no arguments and no terminal, prints this help and stops.\n"
-                "Product verbs: help, version, about, hello, join, list-videos,\n"
-                "self-install, version-check, self-update, self-uninstall.\n"
+                "Product verbs: help, version, about, outline, self-install,\n"
+                "version-check, self-update, self-uninstall.\n"
                 "help prints this usage. version prints the installed version.\n"
-                "about and hello print a page. hello does not draw the menu.\n"
-                "join asks for two videos in this folder and an output name.\n"
-                "list-videos lists eligible videos and does not join.\n"
-                "version-check runs: python -m pip index versions VideoJoin\n"
-                "self-update runs: python -m pip install --upgrade VideoJoin\n"
-                "self-install runs: python -m pip install VideoJoin\n"
-                "self-uninstall runs: python -m pip uninstall -y VideoJoin\n"
-                "and needs --force. Empty arguments do not install or update.\n"
-                "Formats: .mp4 .mov .mkv .avi .m4v."
+                "about prints a page. outline converts one folder and does not\n"
+                "draw the menu. The default output is png in that folder's output\n"
+                "directory. Menu row 1 asks for the current folder or a subfolder.\n"
+                "outline with no folder converts the current directory.\n"
+                "version-check runs: python -m pip index versions {0}\n"
+                "self-update runs: python -m pip install --upgrade {0}\n"
+                "self-install runs: python -m pip install {0}\n"
+                "self-uninstall runs: python -m pip uninstall -y {0}\n"
+                "and needs --force. Empty arguments do not install or update."
                 .format(Cli.APP_NAME)
             ),
         )
@@ -179,9 +172,23 @@ class Cli:
             default=None,
             metavar="verb",
             help=(
-                "Product verb: help, version, about, hello, join, list-videos, "
+                "Product verb: help, version, about, outline, "
                 "self-install, version-check, self-update, or self-uninstall"
             ),
+        )
+        parser.add_argument(
+            "target",
+            nargs="?",
+            default=None,
+            metavar="folder",
+            help="Folder for outline. Default is the current directory.",
+        )
+        parser.add_argument(
+            "--format",
+            "-f",
+            default=None,
+            choices=["png", "webp", "jpg", "jpeg", "bmp", "tiff"],
+            help="Outline image format for the outline verb. Default is png.",
         )
         parser.add_argument(
             "--version",
@@ -199,11 +206,24 @@ class Cli:
         print(text)
         return 0
 
-    def _verb_hello(self):
-        """Hello from this package, then the help next step. Does not draw the menu."""
-        print(self.tui.hello_text())
-        print("Next: {0} help".format(Cli.CONSOLE_NAME))
-        return 0
+    def _verb_outline(self, target, output_format):
+        """Convert one folder. Does not draw the menu and does not prompt.
+
+        requirement-python-cli-interface — the waiting sentences are flushed
+        before the work. A terminal flashes the please-wait bullet until the
+        work returns, then erases it. The returned lines still start with
+        those sentences. This method prints only the remainder.
+        """
+        from .outline import DEFAULT_FORMAT, run_terminal_conversion
+
+        folder = target if target else "."
+        chosen = output_format if output_format else DEFAULT_FORMAT
+        return run_terminal_conversion(
+            sys.stdout,
+            folder=folder,
+            output_format=chosen,
+            choice="outline",
+        )
 
     def _unknown_verb(self, token):
         names = ", ".join(Cli.PRODUCT_VERBS)
@@ -211,11 +231,6 @@ class Cli:
             "Unknown verb '{0}'.".format(token),
             "{0} help — verbs: {1}".format(Cli.CONSOLE_NAME, names),
         )
-
-    def _print_video_list(self):
-        """Eligible names on the console. Does not join and does not draw the screen."""
-        print(self.tui._video_listing())
-        return 0
 
     def _dispatch(self, args):
         """One product verb, the front board, or a fail-closed stop."""
@@ -225,13 +240,23 @@ class Cli:
                 "--force is only for self-uninstall.",
                 "{0} self-uninstall --force".format(Cli.CONSOLE_NAME),
             )
+        if args.format and verb != "outline":
+            return self.report_error(
+                "--format is only for outline.",
+                "{0} outline --format png".format(Cli.CONSOLE_NAME),
+            )
+        if args.target and verb != "outline":
+            return self.report_error(
+                "A folder is only for outline.",
+                "{0} outline".format(Cli.CONSOLE_NAME),
+            )
         if verb == "about":
             result = self.tui.about_on_screen()
             if isinstance(result, int):
                 return result
             return self._page(result)
-        if verb == "hello":
-            return self._verb_hello()
+        if verb == "outline":
+            return self._verb_outline(args.target, args.format)
         if verb == "version":
             return self._page(self.self_manage.local_version())
         if verb == "self-uninstall":
@@ -243,18 +268,6 @@ class Cli:
             return self.self_manage.emit(verb)
         if verb in ("version-check", "self-update", "self-install"):
             return self.self_manage.emit(verb)
-        if verb == "join":
-            if not self.stdout_is_tty():
-                return self.report_error(
-                    "No terminal for join. Use a terminal.",
-                    "{0} join".format(Cli.CONSOLE_NAME),
-                )
-            return self.tui.open_direct("join")
-        if verb == "list-videos":
-            result = self.tui.list_on_screen()
-            if isinstance(result, int):
-                return result
-            return self._page(result)
         if verb is not None:
             return self._unknown_verb(verb)
         if not self.stdout_is_tty():
@@ -297,11 +310,11 @@ def main(argv=None, basedir="", logdir=""):
         )
         return 1
 
-    from VideoJoin import __version__
+    from OutlineImage import __version__
 
     screen = Cli.opens_text_screen(argv)
     logger = ChronicleLogger(
-        logname="VideoJoin",
+        logname=Cli.APP_NAME,
         is_quiet=screen,
         basedir=basedir,
         logdir=logdir,

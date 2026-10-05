@@ -1,42 +1,42 @@
 **file**: docs/requirements/requirement-python-packaging.md
-**Status**: Active (Version 1.2.2)
+**Status**: Active (Version 1.2.5)
 **Area**: python
 **Key**: `requirement-python-packaging`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
 
 ## 1. Purpose
 
-Define the packaging SSOT for the VideoJoin Python distribution: `pyproject.toml`, metadata, dependencies, console entry points, and version consistency.
+Define the packaging SSOT for the OutlineImage Python distribution: `pyproject.toml`, metadata, dependencies, console entry points, and version consistency.
 
-This file owns the ChronicleLogger floor together with `requirement-runtime-prerequisites`. There is no separate dependency-management requirement.
+This file owns the manifest shape. The pip requirement strings are `requirement-python-dependency-management`. ChronicleLogger stays required. `requirements.txt` is not an authority.
 
 ### 1.1 Human-facing
 
-**In one sentence:** VideoJoin is a pip package named VideoJoin, version 1.0.5, and the status library is a required dependency.
+**In one sentence:** OutlineImage is a pip package named OutlineImage, version 1.0.0. The status library and the image stack are required dependencies.
 
 | Box | Meaning | Example |
 |-----|---------|---------|
-| You / this login | Person installing the package | `python -m pip install VideoJoin` |
+| You / this login | Person installing the package | `python -m pip install OutlineImage` |
 | The other role | The manifest | `pyproject.toml` names the version, the console script, and the dependencies |
-| Not this file | What the menu does after install, and how FFmpeg concatenates | CLI, TUI, and pipeline requirements |
+| Not this file | What the menu does after install, and how an outline image is drawn | CLI, TUI, and the domain file |
 
 | Includes | Excludes |
 |----------|----------|
-| Package name, version, console script `video-join`, required `ChronicleLogger>=1.3.1` | Re-exporting ChronicleLogger from the VideoJoin package |
+| Package name, version, console script `outline-image`, required `ChronicleLogger>=1.3.1` | Re-exporting ChronicleLogger from the OutlineImage package |
 | Manifest floor `ChronicleLogger>=1.3.1`, same as this law | Calling the logger optional, or leaving the manifest at `>=1.2.3` |
-| MIT license, homepage, Python range as declared | A claim that pip installs FFmpeg |
+| MIT license, homepage, Python range as declared | A claim that pip installs FFmpeg. FFmpeg is not a dependency |
 
 | Surface | What you open | What for |
 |---------|---------------|----------|
 | `pyproject.toml` | `[project]` | Name, version, dependencies, console script |
-| `src/VideoJoin/__init__.py` | `__version__` | The same version string |
-| pip | Install | `python -m pip install VideoJoin` |
+| `src/OutlineImage/__init__.py` | `__version__` | The same version string |
+| pip | Install | `python -m pip install OutlineImage` |
 
 | You do… | What it means | What you type |
 |---------|---------------|---------------|
-| Install | pip installs VideoJoin and the required status library. It does not install FFmpeg. | `python -m pip install VideoJoin` |
+| Install | pip installs OutlineImage, the status library, and the image stack. It does not install FFmpeg. | `python -m pip install OutlineImage` |
 | Check the version | The badge, the manifest, and `__version__` are the same string. | Open `pyproject.toml` and `__init__.py` |
-| Import the package | You get `__version__` and `main`. You do not get ChronicleLogger from this package. | `python -c "import VideoJoin"` |
+| Import the package | You get `__version__` and `main`. You do not get ChronicleLogger from this package. | `python -c "import OutlineImage"` |
 
 ## 2. Core Rules (Mandatory)
 
@@ -49,27 +49,27 @@ This file owns the ChronicleLogger floor together with `requirement-runtime-prer
 
 ### 2.2 Version SSOT
 
-5. The package version in `pyproject.toml` and `src/VideoJoin/__init__.py` (`__version__`) **MUST** match when a release is claimed.
+5. The package version in `pyproject.toml` and `src/OutlineImage/__init__.py` (`__version__`) **MUST** match when a release is claimed.
 6. Bumping either **MUST** update both in the same change.
-7. **MUST NOT** invent a third version constant. Display code **MUST NOT** keep a second literal, including a fallback `"1.0.5"` (`requirement-python-oop`). The current release string is `1.0.5`. A version bump is a user order, not a side effect of editing this file.
+7. **MUST NOT** invent a third version constant. Display code **MUST NOT** keep a second literal, including a fallback `"1.0.0"` (`requirement-python-oop`). The current release string is `1.0.0`. A version bump is a user order, not a side effect of editing this file.
 
 ### 2.3 Dependencies
 
 8. **MUST** declare runtime Python dependencies required for the shipped CLI.
-9. ChronicleLogger **MUST** be a required dependency at floor `ChronicleLogger>=1.3.1`. It **MUST NOT** be marked optional. The live `pyproject.toml` declares that floor.
-10. System tools (FFmpeg) **MUST NOT** be declared as pip packages. Document them under `requirement-runtime-prerequisites`.
+9. The pip strings **MUST** be the list in `requirement-python-dependency-management`. ChronicleLogger **MUST** stay required at `ChronicleLogger>=1.3.1` and **MUST NOT** be optional. Pillow, numpy, opencv-python-headless, and rembg **MUST** stay required, each with the specifier in that file. The live `pyproject.toml` `[project].dependencies` **MUST** be that same list.
+10. FFmpeg **MUST NOT** be declared as a pip package. This product does not require that binary (`requirement-runtime-prerequisites`).
 11. **MUST NOT** commit secrets or private index passwords into packaging files.
-12. **MUST NOT** re-export `ChronicleLogger` from the VideoJoin package.
+12. **MUST NOT** re-export `ChronicleLogger` from the OutlineImage package.
 
 ### 2.4 Entry points
 
-13. **MUST** declare console script `video-join` → `VideoJoin.cli:main`.
-14. The entry function **MUST** stay `def main` in `src/VideoJoin/cli.py`. In the allowed end state, `main` constructs ChronicleLogger and then `Cli` (`requirement-python-cli-logging`, `requirement-python-oop`).
+13. **MUST** declare console script `outline-image` → `OutlineImage.cli:main`.
+14. The entry function **MUST** stay `def main` in `src/OutlineImage/cli.py`. In the allowed end state, `main` constructs ChronicleLogger and then `Cli` (`requirement-python-cli-logging`, `requirement-python-oop`).
 
 ### 2.5 Build / release helpers
 
 15. Optional `build.sh` / Cython tooling **MAY** exist for maintainer packaging.
-16. **MUST** keep helper scripts consistent with `pyproject.toml` identity (project name VideoJoin).
+16. **MUST** keep helper scripts consistent with `pyproject.toml` identity (project name OutlineImage).
 17. Generated `build/` and `dist/` **MUST NOT** be treated as source SSOT.
 
 ### 2.6 Implementation Notes (this project)
@@ -77,29 +77,29 @@ This file owns the ChronicleLogger floor together with `requirement-runtime-prer
 | Item | Value |
 |------|--------|
 | **Manifest** | `pyproject.toml` |
-| **Project name** | `VideoJoin` |
-| **Version** | `1.0.5` |
-| **requires-python** | `>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*` (as declared — re-verify support claims before marketing) |
-| **Dependencies (law)** | `ChronicleLogger>=1.3.1`, required |
-| **Dependencies (live manifest)** | `ChronicleLogger>=1.3.1`. Matches the law floor |
+| **Project name** | `OutlineImage` |
+| **Version** | `1.0.0` |
+| **requires-python** | `>=3.10` |
+| **Dependencies (law)** | The five strings in `requirement-python-dependency-management`: `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, `rembg>=2.0.85` |
+| **Dependencies (live manifest)** | The same five strings |
 | **Build backend** | `setuptools.build_meta` |
-| **Console script** | `video-join = VideoJoin.cli:main` |
-| **Homepage / repo** | `https://github.com/Wilgat/VideoJoin` |
+| **Console script** | `outline-image = OutlineImage.cli:main` |
+| **Homepage / repo** | `https://github.com/cloudgen/OutlineImage` |
 | **Maintainer build helper** | `build.sh` |
 | **License** | MIT |
 | **Public package exports** | `__version__`, `main` only. **MUST NOT** re-export `ChronicleLogger` |
-| **User docs** | Root `README.md` Quick Installation documents pip and **MUST NOT** claim pip installs FFmpeg. This pass does not edit that README |
-| **README version badge** | Must match packaging version when README claims complete (`1.0.5`) |
+| **User docs** | Root `README.md` Quick Installation documents pip and **MUST NOT** claim pip installs FFmpeg |
+| **README version badge** | Must match packaging version when README claims complete (`1.0.0`) |
 
 ### 2.7 Why This Requirement Exists (CIAO)
 
 - **Principle 5 – SSOT**: One manifest for identity and entry. One floor for ChronicleLogger.
 - **Principle 2 – Intentional**: The live manifest lag is written down instead of being described as optional.
-- **Principle 1 – Caution**: System FFmpeg is not declared as a pip package.
+- **Principle 1 – Caution**: FFmpeg is not a dependency. The image stack is.
 
 ## Under command line for normal user only
 
-On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip as the normal user. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user to install VideoJoin. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`. The install line is `python -m pip install VideoJoin`.
+On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip as the normal user. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user to install OutlineImage. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`. The install line is `python -m pip install OutlineImage`.
 
 ## 3. Design Principles (CIAO / CIAO-Lite)
 
@@ -112,7 +112,7 @@ On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip
 
 **Future AI assistants, Grok, or maintainers MUST NOT**:
 
-1. Remove or rename the `video-join` entry without a CLI and README update.
+1. Remove or rename the `outline-image` entry without a CLI and README update.
 2. Let `__version__` and `pyproject.toml` diverge while claiming a release.
 3. Add private credentials to `pyproject.toml`.
 4. Replace the packaging SSOT with only `requirements.txt`.
@@ -127,11 +127,11 @@ On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip
 
 | ID | Criterion |
 |----|-----------|
-| AC-1 | `pyproject.toml` names VideoJoin |
-| AC-2 | Console script `video-join` is declared |
+| AC-1 | `pyproject.toml` names OutlineImage |
+| AC-2 | Console script `outline-image` is declared |
 | AC-3 | Law and the live manifest both require `ChronicleLogger>=1.3.1` |
-| AC-4 | Version matches `__init__.py` when a release is claimed (`1.0.5`) |
-| AC-5 | FFmpeg is external, not a pip dependency |
+| AC-4 | Version matches `__init__.py` when a release is claimed (`1.0.0`) |
+| AC-5 | FFmpeg is not a pip dependency. The image strings match `requirement-python-dependency-management` |
 | AC-6 | Public exports are `__version__` and `main` only |
 
 ## 6. Related requirements (peer keys only)
@@ -141,7 +141,8 @@ On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip
 | `requirement-python-project-structure` | Package path |
 | `requirement-python-cli-interface` | Entry behavior |
 | `requirement-python-cli-logging` | Points here for the floor |
-| `requirement-runtime-prerequisites` | Same floor. FFmpeg is a system binary |
+| `requirement-python-dependency-management` | Pip strings |
+| `requirement-runtime-prerequisites` | No host encoder. Points at the pip strings |
 | `requirement-python-oop` | `main` stays the console target |
 | `requirement-class-software-dev` | Residual stack |
 | `docs/requirements/index.md` | Registry |
@@ -161,14 +162,17 @@ On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip
 
 | Date | Status | Note |
 |------|--------|------|
-| 2026-08-09 | Active 1.0.0 | Initial packaging law for VideoJoin |
+| 2026-08-09 | Active 1.0.0 | Initial packaging law for OutlineImage |
 | 2026-08-09 | Active 1.1.0 | Export honesty and version 1.0.3 |
 | 2026-10-04 | Active 1.2.0 | ChronicleLogger is required at `>=1.3.1`. Live manifest still `>=1.2.3`. Product version stays 1.0.3 |
 | 2026-10-04 | Active 1.2.1 | Product version **1.0.4**. Manifest floor is `ChronicleLogger>=1.3.1` |
 | 2026-10-04 | Active 1.2.2 | Product version **1.0.5**. Floor stays `ChronicleLogger>=1.3.1` |
+| 2026-10-05 | Active 1.2.3 | Product version **1.0.0**. Image stack is required. `requires-python` is `>=3.10` |
+| 2026-10-05 | Active 1.2.4 | Pip strings move to `requirement-python-dependency-management`. Each entry has a version floor. Product version stays **1.0.0** |
+| 2026-10-05 | Active 1.2.5 | Homepage and repository URL are `https://github.com/cloudgen/OutlineImage`. Product version stays **1.0.0** |
 
 ---
 
-**Last Updated**: 2026-10-04
+**Last Updated**: 2026-10-05
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

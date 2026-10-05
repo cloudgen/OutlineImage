@@ -6,8 +6,8 @@ import os
 import tempfile
 import unittest
 
-from VideoJoin.menu_painter import MenuPainter
-from VideoJoin.tui import Tui
+from OutlineImage.menu_painter import MenuPainter
+from OutlineImage.tui import Tui
 
 
 class TestPathLabel(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestPathLabel(unittest.TestCase):
         saved = {
             name: os.environ.get(name)
             for name in (
-                "LANG", "LANGUAGE", "LC_ALL", "LC_MESSAGES", "HOME", "VIDEOJOIN_LANG",
+                "LANG", "LANGUAGE", "LC_ALL", "LC_MESSAGES", "HOME", "OUTLINEIMAGE_LANG",
             )
         }
         os.environ["LANG"] = "zh_TW.UTF-8"
@@ -31,7 +31,7 @@ class TestPathLabel(unittest.TestCase):
         os.environ["LC_ALL"] = "zh_TW.UTF-8"
         os.environ["LC_MESSAGES"] = "zh_TW.UTF-8"
         os.environ["HOME"] = home
-        os.environ.pop("VIDEOJOIN_LANG", None)
+        os.environ.pop("OUTLINEIMAGE_LANG", None)
         os.chdir(folder)
         try:
             painter = MenuPainter(home=home)
@@ -67,7 +67,7 @@ class TestPathLabel(unittest.TestCase):
                 ):
                     self.assertEqual(line, "Path: " + current + "  " + clock)
                     self.assertFalse(line.startswith("路徑"))
-                    self.assertNotIn("VideoJoin", line.split("  ")[0])
+                    self.assertNotIn("OutlineImage", line.split("  ")[0])
             finally:
                 session.painter.clock_text = original
         finally:
@@ -86,9 +86,9 @@ class TestWideColumns(unittest.TestCase):
         """TP-TUI-10: the colon starts after the display width of a wide short."""
         import unicodedata
 
-        from VideoJoin.cli import Cli
-        from VideoJoin.menu_model import MenuModel
-        from VideoJoin.menu_painter import MenuPainter
+        from OutlineImage.cli import Cli
+        from OutlineImage.menu_model import MenuModel
+        from OutlineImage.menu_painter import MenuPainter
 
         class ColumnScreen:
             """Records each addstr with its column."""
@@ -141,10 +141,10 @@ class TestWideColumns(unittest.TestCase):
         previous = os.getcwd()
         saved = {
             name: os.environ.get(name)
-            for name in ("HOME", "VIDEOJOIN_LANG", "LANG", "LC_ALL")
+            for name in ("HOME", "OUTLINEIMAGE_LANG", "LANG", "LC_ALL")
         }
         os.environ["HOME"] = home
-        os.environ.pop("VIDEOJOIN_LANG", None)
+        os.environ.pop("OUTLINEIMAGE_LANG", None)
         os.chdir(folder)
         clock = "14:05:09"
         try:
@@ -168,7 +168,7 @@ class TestWideColumns(unittest.TestCase):
                 ("パス", "パ"),
                 ("경로", "경"),
             ):
-                os.environ["VIDEOJOIN_LANG"] = {
+                os.environ["OUTLINEIMAGE_LANG"] = {
                     "路径": "zh-Hans",
                     "路徑": "zh-Hant",
                     "パス": "ja",
@@ -189,28 +189,28 @@ class TestWideColumns(unittest.TestCase):
 
             expected = {
                 "zh-Hans": [
-                    "1. join    : 在此文件夹挑选两段视频并连接",
+                    "1. outline : 把所选文件夹中的图像转为轮廓",
                     "3. 系统日志: 查看、清空，以及日志文件夹",
                     "4. 语言    : 此菜单的显示语言",
                     "8. 自我管理: 版本、关于，以及 pip 生命周期",
                     "9. 离开    : 离开",
                 ],
                 "zh-Hant": [
-                    "1. join    : 在此資料夾挑選兩段影片並連接",
+                    "1. outline : 把所選資料夾中的影像轉為輪廓",
                     "3. 系統日誌: 查看、清空，以及日誌資料夾",
                     "4. 語言    : 這個選單的顯示語言",
                     "8. 自我管理: 版本、關於，以及 pip 生命週期",
                     "9. 離開    : 離開",
                 ],
                 "ko": [
-                    "1. join       : 이 폴더에서 동영상 두 개를 골라 이어 붙입니다",
+                    "1. outline    : 고른 폴더의 이미지를 윤곽으로 바꿉니다",
                     "3. 시스템 로그: 보기, 비우기, 로그 폴더",
                     "4. 언어       : 이 메뉴의 표시 언어",
                     "8. 자기관리   : 버전, 정보, pip 수명 주기",
                     "9. 종료       : 종료",
                 ],
                 "ja": [
-                    "1. join        : このフォルダの動画を2本選んで連結する",
+                    "1. outline     : 選んだフォルダの画像を輪郭にする",
                     "3. システムログ: 表示、消去、ログフォルダ",
                     "4. 言語        : このメニューの表示言語",
                     "8. 自己管理    : バージョン、概要、pip のライフサイクル",
@@ -224,7 +224,7 @@ class TestWideColumns(unittest.TestCase):
                 "ja": ("言語", "システムログ", "自己管理", "終了"),
             }
             for code, words in shorts.items():
-                os.environ["VIDEOJOIN_LANG"] = code
+                os.environ["OUTLINEIMAGE_LANG"] = code
                 board_painter = MenuPainter(home=home)
                 board_painter.clock_text = lambda: clock
                 self.assertEqual(board_painter.language.code(), code)
@@ -259,7 +259,7 @@ class TestWideColumns(unittest.TestCase):
                     self.assertEqual(colon, [(y, colon_x, "{0}: ".format(verb_pad))], short)
                     self.assertNotEqual(colon_x, x + len(short), short)
 
-            os.environ.pop("VIDEOJOIN_LANG", None)
+            os.environ.pop("OUTLINEIMAGE_LANG", None)
             english_painter = MenuPainter(home=home)
             english_painter.clock_text = lambda: clock
             self.assertEqual(english_painter.language.code(), "en")

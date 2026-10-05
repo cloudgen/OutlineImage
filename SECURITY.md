@@ -4,7 +4,7 @@
 
 | Version | Supported |
 |---------|-----------|
-| 1.0.5 (current) | Yes |
+| 1.0.0 (current) | Yes |
 | Older releases | Best-effort; prefer upgrading to current |
 
 ## Reporting a Vulnerability
@@ -24,8 +24,8 @@ This project follows **[CIAO](https://github.com/cloudgen/ciao)** / **CIAO-Lite*
 
 | Letter | Principle | Security application |
 |--------|-----------|----------------------|
-| **C** | **Caution** | Assume missing tools and hostile/unexpected media inputs. Fail closed when FFmpeg is missing or both join paths fail. Do not claim success on failed encode. |
-| **I** | **Intentional** | FFmpeg is invoked with argument lists (not shell-interpolated free-form filter graphs from untrusted remote input). Publish of intermediates uses `shutil.move`. Source media is never the final output path. |
+| **C** | **Caution** | Assume missing tools. Fail closed on an unknown verb and on a pip failure. Do not claim a welcome when the command did not run. |
+| **I** | **Intentional** | The welcome line is the same sentence on the terminal and on menu row 1. This program does not join media or list files in the folder. |
 | **A** | **Anti-fragile** | Multi-mount publish (USB vs system temp) is designed via staging + `shutil.move`. Unique temps avoid fixed cwd race names. |
 | **O** | **Over-protect** | Protection Zones on staging/publish helpers; least privilege day-to-day (user-level CLI; no root elevation product surface). |
 
@@ -35,6 +35,6 @@ This section describes **design posture**. It is **not** a claim of third-party 
 
 ## Scope notes
 
-- VideoJoin is a **local** interactive CLI. It does **not** implement online install channels or companion `.sha256` download integrity.
+- OutlineImage is a **local** interactive CLI. It does **not** implement online install channels or companion `.sha256` download integrity. The outline verb reads images in a folder you choose and writes outlines beside them. The first run may download the `isnet-general-use` model used by rembg.
 - Prefer keeping untrusted media and scripts offline unless you trust their origin.
 - Related product docs: [`README.md`](./README.md), [`LICENSE.md`](./LICENSE.md).

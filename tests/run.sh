@@ -1,5 +1,5 @@
 #!/bin/sh
-# VideoJoin test runner. TP-TUI-09, TP-LANG-01, and TP-DOC-01 do not need ffmpeg.
+# OutlineImage test runner. TP-TUI-09, TP-LANG-01, and TP-DOC-01 do not need ffmpeg.
 set -eu
 ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

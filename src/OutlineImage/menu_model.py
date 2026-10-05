@@ -15,7 +15,7 @@ class MenuModel:
 
     boards, when set, replaces the rows for this session. Omit boards and
     the painter supplies the live rows, so a language save repaints them.
-    Front rows are join, system-log, language, self-management, and Exit.
+    Front rows are outline, system-log, language, self-management, and Exit.
     System-log is under 3. Language is under 4.
     """
 
@@ -257,6 +257,13 @@ class MenuModel:
             return None
         if kind == "language":
             self.layer = "lang"
+            self.index = 0
+            self.focus = "list"
+            self.buffer = ""
+            self.cursor = 0
+            return None
+        if kind == "outline":
+            self.layer = "folders"
             self.index = 0
             self.focus = "list"
             self.buffer = ""

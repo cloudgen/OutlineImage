@@ -1,9 +1,38 @@
 # CHANGELOG
 
-All notable changes to **VideoJoin** are documented here.  
-Version SSOT: `pyproject.toml` + `src/VideoJoin/__init__.__version__`.
+All notable changes to **OutlineImage** are documented here.  
+Version SSOT: `pyproject.toml` + `src/OutlineImage/__init__.__version__`.
 
-## [Unreleased]
+## [1.0.0] - 2026-10-05
+
+### Added
+
+- Package name is **OutlineImage**. Console script is `outline-image`. Version is **1.0.0**.
+- `outline` converts images in one folder to detailed outline images. The default file is PNG in that folder's `output` directory.
+- Menu row **1 outline** lists **1** current folder, each subfolder, and **0** back, then runs that conversion.
+- `./convert.py` calls the same conversion.
+- Pip dependencies are `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85`.
+- Public source is `https://github.com/cloudgen/OutlineImage`. The README Screenshots section shows captures of this program.
+
+### Changed
+
+- Specialized from the HelloTui bootstrap. The welcome verb is gone.
+- Language leaf is `~/.local/OutlineImage/language`. `OUTLINEIMAGE_LANG` overrides that file for one process and does not write it.
+
+## [Unreleased] — HelloTui bootstrap history
+
+The notes below, through the 1.0.5 section, are the HelloTui bootstrap this tree was copied from. They are not a second OutlineImage release.
+
+### Removed
+
+- Join, file listing, and FFmpeg. `join` and `list-videos` are not verbs. The program does not scan the folder for media and does not call an encoder.
+
+### Changed
+
+- Package name is **HelloTui**. Console script is `hello-tui`. Version is reset to **1.0.0**.
+- Typed `hello` prints `Welcome to HelloTui 1.0.0.` in the terminal and does not draw the menu.
+- Front row **1** is **hello**. Choosing it shows that same welcome line on the menu.
+- The about page domain line is `Show a welcome message`. Self-management row 83 reads "version and this computer."
 
 ## [1.0.5] - 2026-10-04
 

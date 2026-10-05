@@ -7,10 +7,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 README = (ROOT / "README.md").read_text(encoding="utf-8")
-IMAGE_BASE = "https://raw.githubusercontent.com/Wilgat/VideoJoin/main/screenshots/"
+IMAGE_BASE = "https://raw.githubusercontent.com/cloudgen/OutlineImage/main/screenshots/"
 RELATED = (
-    "https://github.com/Wilgat/VideoJoin",
-    "https://pypi.org/project/VideoJoin/",
+    "https://github.com/cloudgen/OutlineImage",
+    "https://pypi.org/project/OutlineImage/",
     "https://github.com/Wilgat/AnimeDlp",
     "https://github.com/Wilgat/ChronicleLogger",
     "https://github.com/Wilgat/VideoSpeed",
@@ -35,7 +35,7 @@ HEADINGS = (
 
 def _package_version():
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    init_text = (ROOT / "src" / "VideoJoin" / "__init__.py").read_text(encoding="utf-8")
+    init_text = (ROOT / "src" / "OutlineImage" / "__init__.py").read_text(encoding="utf-8")
     py_match = re.search(r'(?m)^version = "([^"]+)"', pyproject)
     init_match = re.search(r'__version__ = "([^"]+)"', init_text)
     return py_match.group(1), init_match.group(1)
@@ -64,10 +64,11 @@ class TestReadmeStructure(unittest.TestCase):
         related = README.split("## Related Projects", 1)[1].split("## Contributing", 1)[0]
         urls = re.findall(r"\((https://[^)]+)\)", related)
         self.assertEqual(tuple(urls), RELATED)
-        video = README.split("### `video.png`", 1)[1]
-        if "\n### " in video:
-            video = video.split("\n### ", 1)[0]
-        self.assertIn("not a text-menu capture", video)
+        for name in ("source-photo.png", "outline-result.png"):
+            block = README.split("### `" + name + "`", 1)[1]
+            if "\n### " in block:
+                block = block.split("\n### ", 1)[0]
+            self.assertIn("not a text-menu capture", block, name)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-class-software-dev.md
-**Status**: Active (Version 1.1.2 – VideoJoin software-development class law + residual stack)
+**Status**: Active (Version 1.1.4 – OutlineImage software-development class law + residual stack)
 **Area**: class
 **Key**: `requirement-class-software-dev`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -8,17 +8,17 @@
 
 Declare this workspace as a software-development project class and hold the residual collection of software-engineering stack facts not already owned by more specific Active peer requirements: primary language, toolchain policy, package and build tooling, and runtime OS family.
 
-This file is class law plus the residual SSOT. It is not a second copy of domain join features, FFmpeg concat ops, the CLI surface, the text menu, the logger construct, the class map, packaging tables, or error-handling tables. Those stay on peer requirements.
+This file is class law plus the residual SSOT. It is not a second copy of the outline domain, the CLI surface, the text menu, the logger construct, the class map, packaging tables, or error-handling tables. Those stay on peer requirements.
 
 ### 1.1 Human-facing
 
-**In one sentence:** This file records that VideoJoin is Python, built with setuptools, and it points at the requirement that owns each other topic.
+**In one sentence:** This file records that OutlineImage is Python, built with setuptools, and it points at the requirement that owns each other topic.
 
 | Box | Meaning | Example |
 |-----|---------|---------|
 | You / this login | Maintainer checking which file owns a topic | The menu picture is the TUI requirement. The language row stays here |
 | The other role | Peer requirements | CLI, TUI, logging, domain, packaging |
-| Not this file | The join steps, the frame glyphs, and the pip command strings | Their own requirements. This file only points |
+| Not this file | The outline steps, the frame glyphs, and the pip command strings | Their own requirements. This file only points |
 
 | Includes | Excludes |
 |----------|----------|
@@ -30,13 +30,13 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 |---------|---------------|----------|
 | This file | Residual table | Which requirement owns the topic |
 | `pyproject.toml` | Package tool facts | The concrete manifest. Packaging owns the tables |
-| `video-join` | The program | You run it as the normal user |
+| `outline-image` | The program | You run it as the normal user |
 
 | You do… | What it means | What you type |
 |---------|---------------|---------------|
-| Find the menu law | Open the TUI requirement. Do not expect the picture in this file. | `video-join` |
-| Find the logger law | Open the logging requirement. The floor is packaging and runtime. | `video-join version` |
-| Install | Use pip. There is no shell installer. | `python -m pip install VideoJoin` |
+| Find the menu law | Open the TUI requirement. Do not expect the picture in this file. | `outline-image` |
+| Find the logger law | Open the logging requirement. The floor is packaging and runtime. | `outline-image version` |
+| Install | Use pip. There is no shell installer. | `python -m pip install OutlineImage` |
 
 ## 2. Core Rules (Mandatory)
 
@@ -91,13 +91,13 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 
 ### 2.7 Implementation Notes (this project)
 
-| Field | Value (VideoJoin) |
+| Field | Value (OutlineImage) |
 |-------|---------------------|
-| **Project display name** | VideoJoin |
+| **Project display name** | OutlineImage |
 | **Project class** | software-development |
 | **Class requirement basename** | `requirement-class-software-dev.md` |
 | **Primary language(s)** | Python |
-| **Language role** | primary only for the runtime package under `src/VideoJoin/` |
+| **Language role** | primary only for the runtime package under `src/OutlineImage/` |
 | **Execution model** | interpreted package. Optional Cython or `build.sh` tooling is not required for the CLI |
 | **Toolchain / interpreter** | CPython |
 | **Toolchain version policy** | range declared in `pyproject.toml` (`requires-python`). Re-verify before advertising a specific minor as tested |
@@ -106,14 +106,14 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 | **Lockfile policy** | not used as product law |
 | **Test runner** | none as project law today. Proof rows in `docs/reviews/test-plan.md` stay todo |
 | **Linter/formatter** | none as project law |
-| **Primary runtime / OS family** | multi-OS where Python and FFmpeg run (documented focus: Linux; macOS and Windows when the dependencies exist) |
-| **Architectures supported** | any architecture with CPython and an FFmpeg binary |
-| **Git surface** | used — remote `https://github.com/Wilgat/VideoJoin` |
-| **Ship surface** | installable Python package `VideoJoin`; console script `video-join`; module form `python -m VideoJoin` |
-| **Product version SSOT** | `src/VideoJoin/__init__.py` → `__version__` and `pyproject.toml` `[project].version` stay equal when either is bumped (current: **1.0.5**) |
+| **Primary runtime / OS family** | multi-OS where CPython runs (documented focus: Linux; macOS and Windows when the dependencies exist) |
+| **Architectures supported** | any architecture with CPython |
+| **Git surface** | used — remote `https://github.com/cloudgen/OutlineImage` |
+| **Ship surface** | installable Python package `OutlineImage`; console script `outline-image`; module form `python -m OutlineImage` |
+| **Product version SSOT** | `src/OutlineImage/__init__.py` → `__version__` and `pyproject.toml` `[project].version` stay equal when either is bumped (current: **1.0.0**) |
 | **Install mode** | pip / local package. Not a shell online-install product |
 | **Type 1 elevation** | intentionally absent. No root or sudo product surface |
-| **Actor / role / subject / approver** | **Considered — no dest approver.** The human operator of `video-join` is the only actor. No dest approval machine. **None** is valid. Do not add an actor requirement file |
+| **Actor / role / subject / approver** | **Considered — no dest approver.** The human operator of `outline-image` is the only actor. No dest approval machine. **None** is valid. Do not add an actor requirement file |
 | **Dest fence conditions** | **Considered — no dest fence conditions.** No dest inbound, approve, or reject queue |
 | **Author contact (non-secret)** | Wilgat Wong · `wilgat.wong@gmail.com` |
 
@@ -123,19 +123,19 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 |-------|-------|--------|
 | Project class membership | **this file** | Fixed |
 | Primary language + toolchain policy | **this file** | Python / CPython |
-| Package/build tool + lockfile | **this file** + `requirement-python-packaging` | packaging owns the PEP 621 tables and the ChronicleLogger floor |
+| Package/build tool + lockfile | **this file** + `requirement-python-packaging` | packaging owns the PEP 621 tables. Pip strings are `requirement-python-dependency-management` |
 | Project layout | `requirement-python-project-structure` | Running tree versus the class map |
 | Class homes | `requirement-python-oop` | One class per file. Do not duplicate the map |
 | CLI entry / typed verbs | `requirement-python-cli-interface` | Empty argv and the verb table |
 | Text menu | `requirement-python-tui` | Front board and the picture |
 | Menu language | `requirement-python-cli-language` | Front row 4, the thirteen codes, and the language leaf |
 | Status logger | `requirement-python-cli-logging` | Construct in `def main` |
-| Domain surface | `requirement-domain-videojoin` | Four pillars. The about page uses the domain sentence |
+| Domain surface | `requirement-domain-outlineimage` | Four pillars. The about page uses the domain sentence |
 | About page | `requirement-python-about` | Identity, host check, and the star box |
-| FFmpeg concat / re-encode | `requirement-video-ffmpeg-pipeline` | Ops SSOT |
+| Encoder / concat | `requirement-video-ffmpeg-pipeline` | Retired. Not an ops SSOT |
 | Python coding style / temps / `shutil.move` | `requirement-python-coding-style` | Publish. StateLogic stays unordered |
 | Error / fail-closed user messaging | `requirement-python-error-handling` | Console sentences |
-| Host runtime deps | `requirement-runtime-prerequisites` | FFmpeg binary and the logger floor |
+| Host runtime deps | `requirement-runtime-prerequisites` | No host encoder. Pip strings are `requirement-python-dependency-management` |
 | Shell online install / shell self-update / Type O | **intentionally absent** | Not a shell channel |
 | Pip lifecycle (`version-check`, `self-update`, `self-install`, `self-uninstall`) | `requirement-python-cli-interface` and `requirement-python-tui` | `python -m pip` only. Not a shell channel |
 | Type 1 sudoers / root elevation | **intentionally absent** | No elevation law |
@@ -152,7 +152,7 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 
 ## 4. Design Principles (CIAO / CIAO-Lite)
 
-- **Caution**: FFmpeg is a host tool. This file does not install it.
+- **Caution**: This file does not install a host tool. The image stack is pip.
 - **Intentional**: The residual table points. It does not copy peer bodies.
 - **Anti-fragile**: Packaging identity stays in `pyproject.toml`.
 - **Over-protect**: Shell Type O stays absent while pip lifecycle is claimed on the CLI and the TUI.
@@ -191,17 +191,18 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 
 | Key | Relationship |
 |-----|----------------|
-| `requirement-python-packaging` | Manifest, entry point, logger floor |
+| `requirement-python-packaging` | Manifest and entry point |
+| `requirement-python-dependency-management` | Pip strings |
 | `requirement-python-project-structure` | Layout |
 | `requirement-python-oop` | Class map |
 | `requirement-python-cli-interface` | Typed verbs and empty argv |
 | `requirement-python-tui` | Text menu |
 | `requirement-python-cli-logging` | Logger construct |
-| `requirement-domain-videojoin` | Domain four pillars |
+| `requirement-domain-outlineimage` | Domain four pillars |
 | `requirement-video-ffmpeg-pipeline` | Processing ops |
 | `requirement-python-coding-style` | Temps and `shutil.move` |
 | `requirement-python-error-handling` | Console errors |
-| `requirement-runtime-prerequisites` | Host tools and the logger floor |
+| `requirement-runtime-prerequisites` | No host encoder. Points at the pip strings |
 | `docs/requirements/index.md` | Registry |
 
 ## Design-time verification
@@ -215,19 +216,21 @@ This file is class law plus the residual SSOT. It is not a second copy of domain
 
 ## Under command line for normal user only
 
-On Termux, Git Bash, Windows cmd, or the same class, VideoJoin runs as the normal user. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`. Pip lifecycle, when the operator asks for it, is `python -m pip` from the CLI and TUI requirements.
+On Termux, Git Bash, Windows cmd, or the same class, OutlineImage runs as the normal user. **This requirement:** do not use administrator privilege, `sudo`, `apt`, or a dedicated system user. Do not pipe a downloaded script into a shell. Type 1 and Type 2 are unused on Termux, Git Bash, and Windows cmd. Git Bash and Windows cmd do not call Termux `pkg`. Pip lifecycle, when the operator asks for it, is `python -m pip` from the CLI and TUI requirements.
 
 ## 8. Status history
 
 | Date | Status | Note |
 |------|--------|------|
-| 2026-08-09 | Active 1.0.0 | Initial software-dev class law for VideoJoin |
+| 2026-08-09 | Active 1.0.0 | Initial software-dev class law for OutlineImage |
 | 2026-10-04 | Active 1.1.0 | Residual pointers for the text menu, the logger, the class map, and pip lifecycle. Shell Type O stays absent |
 | 2026-10-04 | Active 1.1.1 | Menu language points at `requirement-python-cli-language`. No new actor file |
 | 2026-10-04 | Active 1.1.2 | Residual row for the about page. Product version **1.0.5** |
+| 2026-10-05 | Active 1.1.3 | Pip floors point at `requirement-python-dependency-management`. Product version stays **1.0.0** |
+| 2026-10-05 | Active 1.1.4 | Git surface is `https://github.com/cloudgen/OutlineImage`. Product version stays **1.0.0** |
 
 ---
 
-**Last Updated**: 2026-10-04
+**Last Updated**: 2026-10-05
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

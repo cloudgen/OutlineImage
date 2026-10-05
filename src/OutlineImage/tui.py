@@ -1,5 +1,5 @@
 # =============================================================================
-# Text menu session for VideoJoin.
+# Text menu session for OutlineImage.
 # requirement-python-tui — menu region and the bottom input box.
 # requirement-python-about — the about result page is framework_about.
 # requirement-python-oop — this module defines class Tui and MenuScreenError.
@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import curses
+import threading
 
 from .menu_painter import MenuPainter
 from .menu_session import MenuSession
@@ -26,13 +27,13 @@ class MenuScreenError(Exception):
 
 
 class Tui:
-    """Text menu session. Join questions and the front board stay on this screen.
+    """Text menu session. The welcome page and the front board stay on this screen.
 
     MenuModel, MenuSession, and MenuPainter live in their own modules.
-    The rows are join, system-log, language, self-management, and Exit.
+    The rows are outline, system-log, language, self-management, and Exit.
     """
 
-    def __init__(self, app=None, app_name="VideoJoin", version=None, logger=None):
+    def __init__(self, app=None, app_name="OutlineImage", version=None, logger=None):
         self.logger = logger
         if logger is not None:
             logger.log_message("instantiated", component="Tui")
@@ -82,27 +83,143 @@ class Tui:
     def help_on_screen(self):
         """
         General Purpose: Help text when help is typed on the open menu.
-        The typed video-join help verb does not call this and does not draw the screen.
+        The typed outline-image help verb does not call this and does not draw the screen.
         """
+        name = self._name()
         return (
-            "help: usage for VideoJoin.\n"
-            "Verbs: help, version, about, hello, join, list-videos, "
+            "help: usage for {0}.\n"
+            "Verbs: help, version, about, outline, "
             "self-install, version-check, self-update, self-uninstall.\n"
             "version shows the installed version and does not call pip.\n"
             "about shows the about page.\n"
-            "join asks for two videos in this folder and an output name.\n"
-            "list-videos lists eligible videos and does not join.\n"
-            "version-check runs: python -m pip index versions VideoJoin\n"
-            "self-update runs: python -m pip install --upgrade VideoJoin\n"
-            "self-install runs: python -m pip install VideoJoin\n"
-            "self-uninstall runs: python -m pip uninstall -y VideoJoin\n"
+            "outline converts one folder and does not draw this menu.\n"
+            "With no folder, outline uses the current directory.\n"
+            "Menu row 1 outline lists 1 current folder, each subfolder, and 0 back.\n"
+            "Chosen images are written as png outlines in that folder's output directory.\n"
+            "version-check runs: python -m pip index versions {0}\n"
+            "self-update runs: python -m pip install --upgrade {0}\n"
+            "self-install runs: python -m pip install {0}\n"
+            "self-uninstall runs: python -m pip uninstall -y {0}\n"
             "On the command line, self-uninstall also needs --force.\n"
             "Empty arguments on a terminal open this menu and do not run pip."
+        ).format(name)
+
+    def outline_result(self, name, screen=None, model=None):
+        """General Purpose: Convert the picked folder and return the result text.
+
+        '.' is the current folder. Any other name is one child folder.
+        The default outline format is png. This does not prompt again.
+        A real conversion paints the waiting sentence before the work.
+        requirement-python-tui. The words are requirement-domain-outlineimage.
+        """
+        from .outline import convert_folder, folder_for_pick, please_wait_line
+
+        try:
+            folder = folder_for_pick(name)
+        except ValueError:
+            return "ERROR: {0} is not a folder on this list.".format(name)
+        choice = "current" if name == "." else name
+        if screen is not None and model is not None and self._screen_can_flash(screen):
+            lines = self._outline_flashing(folder, choice, screen, model)
+            return "\n".join(lines)
+
+        notices = []
+
+        def _notice(line):
+            notices.append(line)
+            if screen is None or model is None:
+                return
+            self._show_waiting(
+                screen, model, list(notices) + [please_wait_line(True)]
+            )
+
+        _code, lines = convert_folder(folder, choice=choice, on_notice=_notice)
+        return "\n".join(lines)
+
+    def _screen_can_flash(self, screen):
+        """A screen that can arm a short wait can flash the bullet on this thread."""
+        return (
+            getattr(screen, "timeout", None) is not None
+            and getattr(screen, "getch", None) is not None
         )
 
-    def hello_text(self):
-        """General Purpose: The hello sentence. The typed verb prints this off the screen."""
-        return "Hello from {0} {1}.".format(self._name(), self._ver())
+    def _outline_flashing(self, folder, choice, screen, model):
+        """Run the conversion beside a flashing please-wait bullet.
+
+        The worker does the conversion. This thread paints. The bullet is
+        not part of the returned lines. requirement-python-tui.
+        """
+        from .outline import convert_folder, please_wait_line
+
+        notices = []
+        lock = threading.Lock()
+        done = threading.Event()
+        box = {}
+
+        def _notice(line):
+            with lock:
+                notices.append(line)
+
+        def _work():
+            try:
+                box["out"] = convert_folder(
+                    folder, choice=choice, on_notice=_notice
+                )
+            except Exception as exc:
+                box["out"] = (1, ["ERROR: {0}".format(exc)])
+            finally:
+                done.set()
+
+        if self.logger is not None:
+            self.logger.log_message(
+                "thread create name=outline-convert",
+                component="Tui",
+            )
+            self.logger.log_message(
+                "thread start name=outline-convert",
+                component="Tui",
+            )
+        worker = threading.Thread(target=_work, name="outline-convert", daemon=True)
+        worker.start()
+        visible = True
+        try:
+            while not done.is_set():
+                with lock:
+                    body = list(notices)
+                if body:
+                    self._show_waiting(
+                        screen, model, body + [please_wait_line(visible)]
+                    )
+                    visible = not visible
+                try:
+                    screen.timeout(400)
+                    screen.getch()
+                except Exception:
+                    break
+        finally:
+            if self.logger is not None:
+                self.logger.log_message(
+                    "thread wait name=outline-convert on=join",
+                    component="Tui",
+                )
+            worker.join()
+            self._arm_blocking(screen)
+        _code, lines = box.get("out", (1, ["ERROR: The outline did not finish."]))
+        return lines
+
+    def _show_waiting(self, screen, model, lines):
+        """Paint the waiting sentence and refresh. Does not wait for a key.
+
+        requirement-python-tui. Title is working.
+        """
+        model.buffer = ""
+        model.cursor = 0
+        model.focus = "list"
+        model.error = ""
+        self._paint_lines(screen, model, "working", lines, pin_last=True)
+        refresh = getattr(screen, "refresh", None)
+        if refresh is not None:
+            refresh()
 
     def about_text(self):
         """General Purpose: The about page body from AboutPage.framework_about."""
@@ -141,7 +258,7 @@ class Tui:
         if arm is not None:
             arm(-1)
 
-    def read_key(self, screen, model, lines, title="join"):
+    def read_key(self, screen, model, lines, title="menu"):
         """
         General Purpose: Read one line from the bottom input box.
 
@@ -210,7 +327,7 @@ class Tui:
                 return True
             model.error = "Please enter y or n"
 
-    def _read_index(self, screen, model, lines, count, title="join"):
+    def _read_index(self, screen, model, lines, count, title="system-log"):
         """1-based index from the box. Ask again on a bad value. Esc returns None."""
         while True:
             raw = self.read_key(screen, model, lines, title=title)
@@ -225,31 +342,6 @@ class Tui:
             if 1 <= idx <= count:
                 return idx - 1
             model.error = "Enter 1–{0}".format(count)
-
-    def _video_listing(self):
-        """Eligible names in this folder. Does not join."""
-        if self.app is None:
-            return "No eligible videos in this folder."
-        files = self.app.join.discover()
-        if not files:
-            return "No eligible videos in this folder."
-        lines = ["Eligible videos:"]
-        for index, item in enumerate(files, 1):
-            lines.append("  {0:2d}. {1}".format(index, item.name))
-        return "\n".join(lines)
-
-    def list_on_screen(self, screen=None, model=None):
-        """
-        General Purpose: Show the eligible names. Does not join.
-        With no screen, return the text. With a screen, wait for a key.
-        """
-        text = self._video_listing()
-        if screen is not None and model is not None:
-            self.notice(screen, model, text.splitlines(), title="list-videos")
-            return 0
-        if self.app is not None and self.app.stdout_is_tty():
-            return self.open_direct("list-videos")
-        return text
 
     def about_on_screen(self, screen=None, model=None):
         """
@@ -270,12 +362,12 @@ class Tui:
         if too_small:
             self.app.report_error(
                 "The text screen is too small for the menu and the input box.",
-                "video-join help",
+                "{0} help".format(self.app.CONSOLE_NAME),
             )
         else:
             self.app.report_error(
                 "The text menu could not open on this terminal.",
-                "video-join help",
+                "{0} help".format(self.app.CONSOLE_NAME),
             )
         return "missing"
 
@@ -284,14 +376,14 @@ class Tui:
             if self.app is not None:
                 self.app.report_error(
                     "No terminal for the text menu. Use a terminal.",
-                    "video-join help",
+                    "{0} help".format(self.app.CONSOLE_NAME),
                 )
             return False
         return True
 
     def open_text_menu(self):
         """
-        General Purpose: Draw the front board. Does not start the join questions
+        General Purpose: Draw the front board. Does not convert images
         and does not run pip. Returns "missing" when the screen cannot open.
         """
         if not self._require_terminal():
@@ -306,13 +398,15 @@ class Tui:
         def on_kind(kind):
             if kind == "help":
                 return self.help_on_screen()
-            if kind == "hello":
-                return self.hello_text() + "\nNext: video-join help"
+            if isinstance(kind, str) and kind.startswith("pick:"):
+                return self.outline_result(
+                    kind[5:],
+                    screen=screen_box.get("screen"),
+                    model=session.model,
+                )
             if kind in ("version-check", "self-update", "self-install", "self-uninstall"):
                 _code, text = self.app.self_manage.run_pip(kind)
                 return text
-            if kind == "list-videos":
-                return self._video_listing()
             if kind == "view-log":
                 screen = screen_box.get("screen")
                 if screen is None:
@@ -325,12 +419,6 @@ class Tui:
                 return self._clear_log(screen, session.model)
             if kind == "log-folder":
                 return self._log_folder()
-            if kind != "join":
-                return None
-            screen = screen_box.get("screen")
-            if screen is None:
-                return None
-            self.join_on_screen(screen, session.model, direct=False)
             return None
 
         session = MenuSession(
@@ -358,7 +446,7 @@ class Tui:
 
     def open_direct(self, kind):
         """
-        General Purpose: Open the text screen on join, list-videos, or about.
+        General Purpose: Open the text screen on about.
         Does not start on the front board. Returns a process status.
         """
         if not self._require_terminal():
@@ -383,14 +471,10 @@ class Tui:
 
         def _wrapped(screen):
             try:
-                if kind == "join":
-                    code_box["code"] = self.join_on_screen(
-                        screen, session.model, direct=True
-                    )
-                elif kind == "list-videos":
-                    code_box["code"] = self.list_on_screen(screen, session.model)
-                else:
-                    code_box["code"] = self.about_on_screen(screen, session.model)
+                if kind != "about":
+                    code_box["code"] = 1
+                    return
+                code_box["code"] = self.about_on_screen(screen, session.model)
             except Exception as exc:
                 self.notice(
                     screen, session.model, ["ERROR: {0}".format(exc)],
@@ -399,7 +483,6 @@ class Tui:
                 code_box["code"] = 1
             session.leave_to_front()
             # Esc and a finished page return to the front board.
-            # A failed direct join keeps its non-zero status and does not wait there.
             if code_box["code"] == 0:
                 session.run(screen)
 
@@ -469,85 +552,3 @@ class Tui:
     def _log_folder(self):
         """The log-folder result page. The path is logDir()."""
         return self.system_log.folder_text()
-
-    def _numbered(self, files):
-        lines = ["Found video files:"]
-        for index, item in enumerate(files, 1):
-            lines.append("  {0:2d}. {1}".format(index, item.name))
-        lines.append("")
-        return lines
-
-    def join_on_screen(self, screen, model, direct=False):
-        """
-        General Purpose: Ask for two indexes and an output name in the bottom box.
-
-        Current folder only. No folder question. Esc returns without joining.
-        Fewer than two videos: a direct join returns non-zero; an open board
-        stays open and shows the reason.
-        """
-        join = self.app.join
-        blocked = join.block_reason()
-        if blocked:
-            if direct:
-                self.notice(
-                    screen, model, blocked, title="join",
-                    closing="Press a key to close.",
-                )
-                return 1
-            model.error = blocked[0]
-            return 0
-
-        files = join.discover()
-        intro = ["Join two videos in this folder.", "Esc returns to the menu.", ""]
-        first_lines = intro + self._numbered(files) + ["Choose FIRST video →"]
-        first = self._read_index(screen, model, first_lines, len(files), title="join")
-        if first is None:
-            model.show_front()
-            return 0
-        vid1 = files[first]
-        remaining = join.remaining_after(files, vid1)
-        second_lines = intro + self._numbered(remaining) + ["Choose SECOND video →"]
-        second = self._read_index(
-            screen, model, second_lines, len(remaining), title="join"
-        )
-        if second is None:
-            model.show_front()
-            return 0
-        vid2 = remaining[second]
-        default_name = "{0} + {1}.mp4".format(vid1.stem, vid2.stem)
-        name_lines = [
-            "Joining:",
-            "   {0}".format(vid1.name),
-            " + {0}".format(vid2.name),
-            "",
-            "Output filename [{0}]:".format(default_name),
-        ]
-        raw = self.read_key(screen, model, name_lines, title="join")
-        if raw is None:
-            model.show_front()
-            return 0
-        out_path = join.resolve_output_name(vid1, vid2, raw)
-        preview = [
-            "Joining with perfect audio sync:",
-            "   {0}".format(vid1.name),
-            " + {0}".format(vid2.name),
-            " → {0}".format(out_path),
-            "   Staging dir → {0}".format(join.staging_dir_for(out_path)),
-            "",
-            "Running…",
-        ]
-        model.buffer = ""
-        model.focus = "list"
-        model.error = ""
-        self._paint_lines(screen, model, "join", preview, pin_last=True)
-        ok, result = join.run(vid1, vid2, out_path)
-        closing = None
-        if direct and not ok:
-            closing = "Press a key to close."
-        self.notice(
-            screen, model, preview[:-1] + [""] + result, title="join", closing=closing,
-        )
-        model.show_front()
-        if direct and not ok:
-            return 1
-        return 0

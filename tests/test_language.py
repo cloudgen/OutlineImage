@@ -5,11 +5,11 @@ import stat
 import tempfile
 import unittest
 
-from VideoJoin.cli import Cli
-from VideoJoin.menu_language import MenuLanguage
-from VideoJoin.menu_model import MenuModel
-from VideoJoin.menu_painter import MenuPainter
-from VideoJoin.menu_session import MenuSession
+from OutlineImage.cli import Cli
+from OutlineImage.menu_language import MenuLanguage
+from OutlineImage.menu_model import MenuModel
+from OutlineImage.menu_painter import MenuPainter
+from OutlineImage.menu_session import MenuSession
 
 
 def _commit(model, token):
@@ -26,10 +26,10 @@ class TestMenuLanguage(unittest.TestCase):
         self.home = tempfile.mkdtemp(prefix="vjlang_", dir="/tmp")
         self.saved = {
             name: os.environ.get(name)
-            for name in ("HOME", "VIDEOJOIN_LANG", "LANG", "LC_ALL")
+            for name in ("HOME", "OUTLINEIMAGE_LANG", "LANG", "LC_ALL")
         }
         os.environ["HOME"] = self.home
-        os.environ.pop("VIDEOJOIN_LANG", None)
+        os.environ.pop("OUTLINEIMAGE_LANG", None)
         os.environ["LANG"] = "zh_TW.UTF-8"
         os.environ["LC_ALL"] = "zh_TW.UTF-8"
         self.painter = MenuPainter(home=self.home)
@@ -86,7 +86,7 @@ class TestMenuLanguage(unittest.TestCase):
         action = _commit(self.model, "43")
         self.assertEqual(action, "set-zh-Hant")
         session = MenuSession(
-            "VideoJoin",
+            "OutlineImage",
             "1.0.4",
             on_version=lambda: "1.0.4",
             on_about=lambda: "about",
@@ -106,13 +106,14 @@ class TestMenuLanguage(unittest.TestCase):
         self.assertEqual(stat.S_IMODE(os.stat(folder).st_mode), 0o700)
         front = self.painter.display_rows("front")
         self.assertEqual(front[2][1], "語言")
-        self.assertEqual(front[0][1], "join")
+        self.assertEqual(front[0][1], "outline")
+        self.assertEqual(front[0][3], "outline")
         self.assertEqual(self.painter.display_rows("log")[0][1], "view-log")
         self.assertEqual(self.painter.display_rows("lang")[0][1], "English")
         self.assertNotIn("language", Cli.PRODUCT_VERBS)
 
     def test_tp_lang_01_invalid_leaf_and_env_override(self):
-        """TP-LANG-01: a bad first line stays English. VIDEOJOIN_LANG wins and does not write."""
+        """TP-LANG-01: a bad first line stays English. OUTLINEIMAGE_LANG wins and does not write."""
         leaf = self.painter.language.leaf_path()
         os.makedirs(os.path.dirname(leaf), mode=0o700)
         with open(leaf, "w", encoding="utf-8") as handle:
@@ -122,13 +123,13 @@ class TestMenuLanguage(unittest.TestCase):
         self.assertEqual(loaded.path_label(), "Path")
         with open(leaf, "r", encoding="utf-8") as handle:
             self.assertEqual(handle.read(), "nope\nzh-Hant\n")
-        os.environ["VIDEOJOIN_LANG"] = "zh-Hant"
+        os.environ["OUTLINEIMAGE_LANG"] = "zh-Hant"
         forced = MenuLanguage(home=self.home)
         self.assertEqual(forced.code(), "zh-Hant")
         self.assertEqual(forced.path_label(), MenuPainter.PATH_LABEL_ZH_HANT)
         with open(leaf, "r", encoding="utf-8") as handle:
             self.assertEqual(handle.read(), "nope\nzh-Hant\n")
-        os.environ.pop("VIDEOJOIN_LANG", None)
+        os.environ.pop("OUTLINEIMAGE_LANG", None)
         cr = MenuLanguage(home=self.home)
         with open(leaf, "w", encoding="utf-8") as handle:
             handle.write("es\r\n")
