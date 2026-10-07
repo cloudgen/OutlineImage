@@ -29,6 +29,64 @@ On a terminal, starting it with no arguments opens a text menu. The menu does no
 2. **Built-in languages.** Row **4** lists thirteen languages: English, Simplified Chinese, Traditional Chinese, Spanish, Arabic, French, Portuguese, Russian, German, Japanese, Korean, Dutch, and Greek. The choice is saved for the next run. The note on row 1 follows the menu language.
 3. **Lifecycle and diagnostics.** `version-check`, `self-update`, `self-install`, and `self-uninstall` are menu rows **84**–**87** and typed verbs. `self-uninstall` on the command line needs `--force`. They call pip and do not use root. **system-log** (**3**) views a log, clears a log, and shows the log folder. **about** (**83**) stays in English.
 
+## How an outline is made
+
+An outline here is a new picture: white lines on a black background. The lines follow the shape of the object, and they also follow the parts you can see on it, such as a hole, a ridge, a seam, a pad, or a slot. The file is written in an `output` folder next to the photo. Its name is the photo's name plus `_detailed_outline`.
+
+Four libraries do this work. They install with the program. You do not open them yourself.
+
+**Pillow** opens the photo. A phone photo is often larger than the line drawing needs to be. If the long side is longer than 1600 pixels, Pillow shrinks the photo until that side is 1600. The shrink uses Lanczos resampling, which keeps a real edge from turning into a smear.
+
+**rembg** cuts the object out of the background. It uses a small neural network named **ISNet general-use** (`isnet-general-use`). The network looks at the photo and decides, pixel by pixel, which pixels belong to the object and which pixels are the table, the wall, or anything else behind it. The result is the same photo with a transparent background. The first conversion may download that model. Later conversions use the copy already on the computer.
+
+**NumPy** holds those pixels as a grid of numbers, so the next step can measure them.
+
+**OpenCV** finds the lines and draws them. It is a computer-vision library. The outer shape comes from the transparent cutout: OpenCV traces the boundary of the object and draws that boundary as a thin white line. A hole is traced too when the cutout is actually transparent there. A blob only a few pixels across is left out.
+
+### What the program looks for inside the object
+
+The program looks at color as well as brightness. A hole in bright plastic can be about as light as the plastic, so a test that only asks "is this darker?" misses the rim. The rim is still a different color.
+
+OpenCV converts the cutout into a color system called **CIELAB**, often shortened to LAB. Each pixel becomes three plain facts:
+
+- how light or dark it is (brightness)
+- where it sits between green and red
+- where it sits between blue and yellow
+
+The last two are color, kept apart from brightness. The program searches for a sharp change in brightness, then searches again for a sharp change in each color fact. A part that matches the object in brightness can still be drawn when its color differs. The color search is allowed to be more sensitive than the brightness search, because a same-brightness color change is often a real part, such as a hole rim or a seam. On the phone stand in the Screenshots section, that is what keeps the hole, the knob ridges, the pads, and the hinge seam in the drawing.
+
+Before that search, the area outside the object is filled with a typical color of the object. The outer shape is then drawn once, from the cutout, and the inner search stays one pixel inside the object so it does not draw that same rim a second time.
+
+The surface is smoothed a little with a **bilateral filter**. That filter softens grain, dust, and the fine texture of the material, and it tries to leave a real seam sharp. Brightness is smoothed a bit more than color.
+
+### How sensitive each photo is
+
+The line finder is the **Canny** method in OpenCV. Canny keeps a pixel when the change there is strong enough, and it links those pixels into a line. Two numbers tell it what "strong enough" means. A lower pair draws faint lines. A higher pair ignores them.
+
+One pair for every photo is a poor fit. A plain surface needs a sensitive setting, or a hinge seam disappears. A scratched photo needs a cautious setting, or every scuff becomes a line.
+
+Each photo therefore picks its own pair, and the pick stays inside a safe range. OpenCV's **Sobel** filter measures how fast the picture changes from one pixel to the next. The program looks at those measurements on the object only, and it takes a high point in that list: the 90th percentile, stronger than about nine tenths of the pixels and weaker than the strongest scratches. The high cut starts from that point. The low cut is forty percent of the high cut. Both cuts are then clipped so they cannot leave the safe range. A quiet surface lands on the sensitive end, so a faint seam still appears. A busy or high-contrast photo lands on the cautious end, so scuffs stay out. The safe range for color sits lower than the safe range for brightness.
+
+### Cleaning the lines
+
+A real seam is a run of pixels. A speck of dust is a few pixels. OpenCV groups touching edge pixels, which are called connected components, and drops a group that is shorter than a real seam. That cleanup runs for the brightness lines, for the color lines, and once more after the lines are combined.
+
+A closing step then fills a one-pixel break, so a seam does not fall into dashes. Tiny holes in the cutout's transparency are filled the same way, and tiny spikes of transparency are removed, so a speck of background does not become a fake hole. Pixels that are only faintly transparent are treated as outside the object.
+
+The white lines and the outer shape are combined on a black picture and saved. The usual file is PNG.
+
+### What was changed so the lines improved
+
+The first drawing looked only at brightness. It used one Canny setting for every photo, with cuts at 40 and 120, after a stronger smooth. On a bright object, a hole, a knob ridge, a hinge seam, or a pad can be as light as the plastic around it. Those parts dropped out. Small dirt marks could remain, because short specks were kept.
+
+Three changes are what the program uses now.
+
+1. **Color as well as brightness.** The two LAB color facts are searched too, and their safe range stays more sensitive than brightness. A part that matches the plastic in brightness still gets a line when its color differs.
+2. **A sensitivity that follows the photo.** The Sobel measurement replaces the single pair of cuts. A plain surface is more sensitive. A scratched surface is less sensitive. Both stay inside the safe range.
+3. **Specks are thrown away.** Short edge fragments are dropped. Dust and a one-pixel sparkle stay out of the drawing. A one-pixel gap in a real seam is closed.
+
+A line is drawn where the photo itself changes. When a rim matches the plastic in both brightness and color, the photo has no edge there, and a short gap can remain. The program leaves that gap. Guessing a circle or an oval on those gaps was tried and was not kept: a guessed oval replaced a real slot and cut across real ridges. The drawing stays with the edges the photo actually has.
+
 ## Quick Installation
 
 **Python dependencies:** `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` (required). Pip installs them with OutlineImage. The first outline run may download the `isnet-general-use` model. No external media tool is required.
@@ -363,4 +421,4 @@ MIT — see [`LICENSE.md`](./LICENSE.md). Also declared in `pyproject.toml`.
 
 ## Last Update
 
-2026-10-05 — **1.0.0**. The public source is `https://github.com/cloudgen/OutlineImage`. The package name is **OutlineImage** and the console script is `outline-image`. `outline` writes a detailed outline image for each picture in a folder. The default file is PNG in that folder's `output` directory. Menu row 1 lists **1** current folder, each subfolder, and **0** back, then runs that conversion. The Screenshots section shows captures of this program. Version badge matches `pyproject.toml` and `__version__`. `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` are required.
+2026-10-07 — **1.0.0**. The public source is `https://github.com/cloudgen/OutlineImage`. The package name is **OutlineImage** and the console script is `outline-image`. `outline` writes a detailed outline image for each picture in a folder. The default file is PNG in that folder's `output` directory. The lines come from brightness and from color, short specks are dropped, and each photo picks its own sensitivity inside a safe range. How an outline is made explains that method in plain language. Menu row 1 lists **1** current folder, each subfolder, and **0** back, then runs that conversion. The Screenshots section shows captures of this program. Version badge matches `pyproject.toml` and `__version__`. `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` are required.

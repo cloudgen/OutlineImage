@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-domain-outlineimage.md
-**Status**: Active (Version 1.3.2)
+**Status**: Active (Version 1.3.3)
 **Area**: domain
 **Key**: `requirement-domain-outlineimage`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -66,6 +66,14 @@ Supported inputs, top level only, are `.webp`, `.png`, `.jpg`, and `.jpeg`. Subf
 **Missing folder or bad format:** return 1 and a next-step line. A failure on one image **MUST** be reported and **MUST NOT** stop the remaining images. Any image failure makes the exit code 1. The last line of a run that wrote or tried to write is `Outlines saved in:` plus the output directory.
 
 **Model:** `isnet-general-use`. The longest edge used for the conversion is 1600. The model loads only when the folder has a supported image. The first such run may download that model. A missing image library **MUST** name the pip next step and return 1.
+
+**How the lines are drawn.** This file owns the method. Pillow opens the picture and, when the longest side is longer than 1600, shrinks it. rembg with `isnet-general-use` cuts the object out of the background. OpenCV traces that cutout for the outer shape. A hole is traced when the cutout is transparent there. A very small blob is left out.
+
+Inner lines come from brightness and from color. The cutout is split into lightness and two color channels (CIELAB). A part that matches the object in brightness can still be drawn when its color differs. The color pass stays more sensitive than the brightness pass. The area outside the object is filled with a typical object color before the search, and the search stays inside the object, so the outer shape is drawn once.
+
+Each photo picks its own sensitivity inside a fixed safe range. The range numbers live next to `MAX_EDGE` in `outline.py`. They are not frozen in this file. The program measures how much the foreground already changes from pixel to pixel (a Sobel gradient, then a high percentile of that change). A quiet surface uses the sensitive end of the range, so a faint seam still appears. A scratched or high-contrast photo uses the cautious end, so scuffs stay out. Short specks are dropped. One-pixel breaks in a real seam are closed.
+
+The program draws a line where the photo itself changes. It **MUST NOT** invent a circle, an ellipse, or any other guessed shape to close a gap. A rim that matches the object in both brightness and color may keep a short gap. The root user document explains this method in plain language. The words there match this paragraph.
 
 **Waiting sentence:** This file owns the words. Before converting images, and before downloading the model when that download is about to start, the operator sees one English sentence: `{choice} has been selected. {process} takes time to finish.` The process words are `Converting images` and `Downloading the AI model`. Those process words stay English when the menu language is Chinese. The choice token is the typed verb `outline`, the script name `convert.py`, or the folder-board short: `current` when the pick is `.`, otherwise the child directory name.
 
@@ -172,6 +180,7 @@ On Termux, Git Bash, Windows cmd, or the same class, `outline` and the menu run 
 6. Import the image stack when the chosen folder has no supported image.
 7. Start a conversion or a model fetch without the waiting sentence in pillar A, show a download sentence when the weights file is already a file, show either sentence for an empty folder, a missing folder, a rejected format, or a failed output-directory create, or store the sentence in a module-level constant.
 8. Leave the please-wait bullet on the result, show it when no waiting sentence was shown, or store that bullet line in a module-level constant.
+9. Replace a detected edge with a fitted circle or ellipse, or draw a guessed shape across a gap. A rim that matches the object in both brightness and color may keep a short gap.
 
 **Violating this rule is a critical domain regression.**
 
@@ -229,9 +238,10 @@ On Termux, Git Bash, Windows cmd, or the same class, `outline` and the menu run 
 | 2026-10-05 | Active 1.3.0 | The domain is a detailed outline image. Typed `outline` and menu row 1. Product version **1.0.0** |
 | 2026-10-05 | Active 1.3.1 | Waiting sentence before converting images and before a model download. Product version stays **1.0.0** |
 | 2026-10-05 | Active 1.3.2 | A flashing `• please wait` bullet stays while that process runs and is removed when it finishes. Product version stays **1.0.0** |
+| 2026-10-07 | Active 1.3.3 | Lines come from brightness and color. Each photo picks a sensitivity inside a safe range. Short specks are dropped. A guessed circle or ellipse is refused. Product version stays **1.0.0** |
 
 ---
 
-**Last Updated**: 2026-10-05
+**Last Updated**: 2026-10-07
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

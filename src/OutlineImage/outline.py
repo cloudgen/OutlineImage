@@ -21,6 +21,27 @@ OUTPUT_DIR_NAME = "output"
 DEFAULT_FORMAT = "png"
 MODEL_NAME = "isnet-general-use"
 MAX_EDGE = 1600
+# A soft alpha fringe is not part of the object.
+ALPHA_THRESHOLD = 24
+MIN_OUTLINE_AREA = 50
+# Each photo picks its own edge cut inside this band.
+# Flat plastic stays near the low end, so a seam still draws.
+# A scuffed or contrasty photo stays near the high end, so the scuffs stay out.
+# Color stays lower than brightness: a hole can match the object in
+# brightness and still differ in color. requirement-domain-outlineimage.
+BRIGHT_LOW_FLOOR = 14
+BRIGHT_LOW_CAP = 32
+BRIGHT_HIGH_FLOOR = 40
+BRIGHT_HIGH_CAP = 80
+COLOR_LOW_FLOOR = 6
+COLOR_LOW_CAP = 14
+COLOR_HIGH_FLOOR = 16
+COLOR_HIGH_CAP = 40
+BRIGHT_EDGE_SIGMA = 36
+COLOR_EDGE_SIGMA = 22
+BRIGHT_SPECK = 22
+COLOR_SPECK = 10
+EDGE_SPECK = 12
 
 
 def list_subfolders(folder):
@@ -207,12 +228,99 @@ def _image_stack():
     return cv2, np, Image, new_session, remove
 
 
+def _drop_short_edges(cv2, np, edges, min_area):
+    """Drop edge specks shorter than min_area. Real seams are longer."""
+    count, labels, stats, _centers = cv2.connectedComponentsWithStats(edges, 8)
+    kept = np.zeros_like(edges)
+    for index in range(1, count):
+        if stats[index, cv2.CC_STAT_AREA] >= min_area:
+            kept[labels == index] = 255
+    return kept
+
+
+def _foreground_mask(cv2, alpha):
+    """Binary object mask. A one-pixel close and open removes alpha pinholes."""
+    _level, mask = cv2.threshold(alpha, ALPHA_THRESHOLD, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    return mask
+
+
+def _edge_limits(cv2, np, blurred, inner, low_floor, high_floor, low_cap, high_cap):
+    """Cut for this photo, kept inside the band.
+
+    OpenCV Canny compares its cuts to a Sobel gradient, so the same Sobel
+    on the foreground picks the cut. A quiet surface gets the low end.
+    A busy surface gets the high end.
+    """
+    gradient_x = cv2.Sobel(blurred, cv2.CV_32F, 1, 0, ksize=3)
+    gradient_y = cv2.Sobel(blurred, cv2.CV_32F, 0, 1, ksize=3)
+    magnitude = np.abs(gradient_x) + np.abs(gradient_y)
+    values = magnitude[inner > 0]
+    if values.size == 0:
+        return float(low_floor), float(high_floor)
+    high = float(np.percentile(values, 90))
+    low = high * 0.40
+    low = float(np.clip(low, low_floor, low_cap))
+    high = float(np.clip(max(high, low + 8.0), high_floor, high_cap))
+    return low, high
+
+
+def _channel_edges(cv2, np, plane, mask, inner, band, sigma, min_area):
+    """Canny on one channel. Outside the object is filled so the rim is not an edge."""
+    foreground = plane[mask > 0]
+    if foreground.size == 0:
+        return np.zeros(mask.shape, np.uint8)
+    filled = plane.copy()
+    filled[mask == 0] = int(np.median(foreground))
+    blurred = cv2.bilateralFilter(filled, d=5, sigmaColor=sigma, sigmaSpace=sigma)
+    low, high = _edge_limits(cv2, np, blurred, inner, *band)
+    found = cv2.Canny(blurred, low, high)
+    found = cv2.bitwise_and(found, inner)
+    return _drop_short_edges(cv2, np, found, min_area)
+
+
+def _detail_edges(cv2, np, bgr, mask):
+    """Inner lines from brightness and from color.
+
+    The cut follows this photo. A gray hole in a bright object can share a
+    brightness and still differ in color, so the color band stays lower.
+    """
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    inner = cv2.erode(mask, kernel)
+    bright_band = (
+        BRIGHT_LOW_FLOOR, BRIGHT_HIGH_FLOOR, BRIGHT_LOW_CAP, BRIGHT_HIGH_CAP,
+    )
+    color_band = (
+        COLOR_LOW_FLOOR, COLOR_HIGH_FLOOR, COLOR_LOW_CAP, COLOR_HIGH_CAP,
+    )
+    edges = _channel_edges(
+        cv2, np, lab[:, :, 0], mask, inner,
+        bright_band, BRIGHT_EDGE_SIGMA, BRIGHT_SPECK,
+    )
+    for channel in (1, 2):
+        edges = cv2.bitwise_or(
+            edges,
+            _channel_edges(
+                cv2, np, lab[:, :, channel], mask, inner,
+                color_band, COLOR_EDGE_SIGMA, COLOR_SPECK,
+            ),
+        )
+    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+    edges = cv2.bitwise_and(edges, inner)
+    return _drop_short_edges(cv2, np, edges, EDGE_SPECK)
+
+
 def extract_detailed_outline(image_path, output_dir, session, output_format, stack):
     """
     General Purpose: Outer and inner outlines on a black canvas.
 
     output_format is an extension without a dot. The file name is
-    <stem>_detailed_outline.<ext> inside output_dir.
+    <stem>_detailed_outline.<ext> inside output_dir. Brightness edges and
+    color edges are both drawn. The cut follows the photo, so a part that
+    matches the object in brightness still appears.
     """
     cv2, np, Image, _new_session, remove = stack
     ext = output_format.lstrip(".").lower()
@@ -226,19 +334,16 @@ def extract_detailed_outline(image_path, output_dir, session, output_format, sta
     img_rgba = np.array(cutout)
     img_bgra = cv2.cvtColor(img_rgba, cv2.COLOR_RGBA2BGRA)
     height, width = img_bgra.shape[:2]
-    alpha = img_bgra[:, :, 3]
-    _threshold, fg_mask = cv2.threshold(alpha, 20, 255, cv2.THRESH_BINARY)
+    fg_mask = _foreground_mask(cv2, img_bgra[:, :, 3])
     silhouette_contours, _hierarchy = cv2.findContours(
         fg_mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
     )
     silhouette_contours = [
-        contour for contour in silhouette_contours if cv2.contourArea(contour) > 50
+        contour
+        for contour in silhouette_contours
+        if cv2.contourArea(contour) > MIN_OUTLINE_AREA
     ]
-    gray = cv2.cvtColor(img_bgra[:, :, :3], cv2.COLOR_BGR2GRAY)
-    gray = cv2.bitwise_and(gray, gray, mask=fg_mask)
-    blurred = cv2.bilateralFilter(gray, d=7, sigmaColor=50, sigmaSpace=50)
-    edges = cv2.Canny(blurred, threshold1=40, threshold2=120)
-    edges = cv2.bitwise_and(edges, edges, mask=fg_mask)
+    edges = _detail_edges(cv2, np, img_bgra[:, :, :3], fg_mask)
     canvas = np.zeros((height, width), dtype=np.uint8)
     canvas = cv2.bitwise_or(canvas, edges)
     cv2.drawContours(

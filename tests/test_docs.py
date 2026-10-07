@@ -21,6 +21,7 @@ RELATED = (
 HEADINGS = (
     "Features",
     "Advantages",
+    "How an outline is made",
     "Quick Installation",
     "Usage",
     "Screenshots",
