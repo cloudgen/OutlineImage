@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-domain-outlineimage.md
-**Status**: Active (Version 1.3.3)
+**Status**: Active (Version 1.3.4)
 **Area**: domain
 **Key**: `requirement-domain-outlineimage`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -129,7 +129,7 @@ The domain sentence on the about page is `Write a detailed outline for each imag
 | Field | Content |
 |-------|---------|
 | Product name | OutlineImage |
-| Version | `__version__`, the same string as `pyproject.toml` (current `1.0.0`) |
+| Version | `__version__`, the same string as `pyproject.toml` (current `1.0.1`) |
 | Domain summary | Write a detailed outline for each image in a folder |
 
 The page **MUST** use that domain sentence. The runtime-tools line **MUST** be `none`. It **MUST NOT** name FFmpeg. Pillow, OpenCV, numpy, and rembg are pip dependencies. They are not a host binary on that line.
@@ -145,7 +145,7 @@ The page **MUST** use that domain sentence. The runtime-tools line **MUST** be `
 | **Menu row** | Front row 1, kind `outline`, short `outline`. Folder board layer `folders` |
 | **Output** | `<folder>/output/{stem}_detailed_outline.png` by default |
 | **Inputs** | `.webp` `.png` `.jpg` `.jpeg`, this folder only |
-| **VERSION** | `1.0.0` (`__init__.py` and `pyproject.toml`) |
+| **VERSION** | `1.0.1` (`__init__.py` and `pyproject.toml`) |
 | **Absent** | `src/OutlineImage/join.py`, verbs `hello`, `join`, and `list-videos`, FFmpeg |
 | **CLI SSOT** | `requirement-python-cli-interface` |
 | **Screen** | `requirement-python-tui` |
@@ -239,6 +239,7 @@ On Termux, Git Bash, Windows cmd, or the same class, `outline` and the menu run 
 | 2026-10-05 | Active 1.3.1 | Waiting sentence before converting images and before a model download. Product version stays **1.0.0** |
 | 2026-10-05 | Active 1.3.2 | A flashing `• please wait` bullet stays while that process runs and is removed when it finishes. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.3.3 | Lines come from brightness and color. Each photo picks a sensitivity inside a safe range. Short specks are dropped. A guessed circle or ellipse is refused. Product version stays **1.0.0** |
+| 2026-10-07 | Active 1.3.4 | Product version is **1.0.1** |
 
 ---
 

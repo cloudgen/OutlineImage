@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-python-about.md
-**Status**: Active (Version 1.0.1)
+**Status**: Active (Version 1.0.2)
 **Area**: python
 **Key**: `requirement-python-about`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -112,12 +112,12 @@ Pyenv and conda path reads for this page stay in this file. This product does no
 Values in angle brackets are the live read. They are not a frozen login or home path.
 
 ```text
-OutlineImage 1.0.0
+OutlineImage 1.0.1
 Domain: Write a detailed outline for each image in a folder
 Runtime tools: none
 Entry points: outline-image, python -m OutlineImage
 
-2026-10-05 11:16:23.700590 OutlineImage(v1.0.0)  [CHECK SYSTEM]:
+2026-10-05 11:16:23.700590 OutlineImage(v1.0.1)  [CHECK SYSTEM]:
   Now checking your operation system!
     Python: 3.12.3
     C Library: GCC 13.3.0
@@ -144,7 +144,7 @@ Entry points: outline-image, python -m OutlineImage
 
 ***************************************************
 *                                                 *
-* OutlineImage (1.0.0) by Wilgat Wong on 2026-10-05  *
+* OutlineImage (1.0.1) by Wilgat Wong on 2026-10-05  *
 *                                                 *
 * You are using an UNINSTALLED version, location: *
 *     <program path>                              *
@@ -188,7 +188,7 @@ Invocation: `outline-image` on a terminal, then `8`, then `83`. The same page is
 | **TTY / Interactive** | `yes` or `no` from `sys.stdout.isatty()` |
 | **JSON** | Not claimed. No `--json` stream |
 | **Privilege** | normal user privilege |
-| **Product version** | `1.0.0` |
+| **Product version** | `1.0.1` |
 
 ### 2.3 Why This Requirement Exists (Direct CIAO Alignment)
 
@@ -284,7 +284,8 @@ TP-ABOUT-01 asserts the identity line, every host-check label, the star-box titl
 |------|--------|------|
 | 2026-10-04 | Active 1.0.0 | About page: identity, host check, star box. Pyenv and conda reads stay here. No `--json`. Product version **1.0.5**. `./tests/run.sh` — 23 tests, OK. `TP-ABOUT-01` through `TP-ABOUT-14` and `TP-ABOUT-16` are have. There is no `TP-ABOUT-15` |
 | 2026-10-05 | Active 1.0.1 | Homepage is `https://github.com/cloudgen/OutlineImage`. Product version stays **1.0.0** |
+| 2026-10-07 | Active 1.0.2 | The sample page uses product version **1.0.1** |
 
-**Last Updated**: 2026-10-04
+**Last Updated**: 2026-10-07
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

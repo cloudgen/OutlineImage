@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OutlineImage"
-version = "1.0.0"
+version = "1.0.1"
 description = "OutlineImage writes a detailed outline image for each picture in a folder."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,6 +1,6 @@
 # OutlineImage - Detailed outline images from a folder
 
-![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-1.0.1-blue?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 [![CIAO](https://img.shields.io/badge/Philosophy-CIAO%20(Caution%20%E2%80%A2%20Intentional%20%E2%80%A2%20Anti--fragile%20%E2%80%A2%20Over--engineered)-purple.svg)](https://github.com/cloudgen/ciao)
 [![Stars](https://img.shields.io/github/stars/cloudgen/OutlineImage?style=flat-square)](https://github.com/cloudgen/OutlineImage)
@@ -97,7 +97,7 @@ A line is drawn where the photo itself changes. When a rim matches the plastic i
 pip install OutlineImage
 ```
 
-This installs the console entry **`outline-image`** and the package **`OutlineImage`**. Packaging name SSOT is `pyproject.toml` `[project].name` = `OutlineImage`. This tree is **1.0.0**. The PyPI badge above shows the live index.
+This installs the console entry **`outline-image`** and the package **`OutlineImage`**. Packaging name SSOT is `pyproject.toml` `[project].name` = `OutlineImage`. This tree is **1.0.1**. The PyPI badge above shows the live index.
 
 ### Local install (checkout)
 
@@ -133,7 +133,7 @@ Path: /tmp/clips                                                       12:06:45
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.0  │  main menu  │  Up/Down  •  Enter
+  OutlineImage 1.0.1  │  main menu  │  Up/Down  •  Enter
 ```
 
 **system-log** (3):
@@ -152,7 +152,7 @@ Path: /tmp/clips                                                       12:06:45
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.0  │  system-log  │  Up/Down  •  Enter
+  OutlineImage 1.0.1  │  system-log  │  Up/Down  •  Enter
 ```
 
 **language** (4). The short on each language row is that language’s own name. Numbers 40 and 54–59 are not printed. `0` goes back and does not save.
@@ -178,7 +178,7 @@ Path: /tmp/clips                                                       12:06:46
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.0  │  language  │  Up/Down  •  Enter
+  OutlineImage 1.0.1  │  language  │  Up/Down  •  Enter
 ```
 
 **self-management** (8):
@@ -197,7 +197,7 @@ Path: /tmp/clips                                                       14:05:09
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.0  │  self-management  │  Up/Down  •  Enter
+  OutlineImage 1.0.1  │  self-management  │  Up/Down  •  Enter
 ```
 
 Choose a number, or type the command name in the box. The block caret appears in that box while it is focused.
@@ -231,7 +231,7 @@ outline-image self-install
 outline-image self-uninstall --force
 ```
 
-`version` prints `OutlineImage 1.0.0` and does not call pip. `about` shows one English page: the product identity, a host check of this computer, and a star box. It does not call pip. `outline` converts the current directory when no folder is given and does not draw the menu. `help` prints usage.
+`version` prints `OutlineImage 1.0.1` and does not call pip. `about` shows one English page: the product identity, a host check of this computer, and a star box. It does not call pip. `outline` converts the current directory when no folder is given and does not draw the menu. `help` prints usage.
 
 `version-check` runs `python -m pip index versions OutlineImage`. `self-update` runs `python -m pip install --upgrade OutlineImage`. `self-install` runs `python -m pip install OutlineImage`. `self-uninstall` runs `python -m pip uninstall -y OutlineImage` and needs `--force` on the command line. Those pip verbs do not use sudo. Empty arguments do not install or update.
 
@@ -378,7 +378,7 @@ outline-image
 outline-image version
 ```
 
-`version` prints `OutlineImage 1.0.0` and does not call pip. A run that is not the text menu can also print ChronicleLogger status lines above that. The text menu keeps those lines off the screen.
+`version` prints `OutlineImage 1.0.1` and does not call pip. A run that is not the text menu can also print ChronicleLogger status lines above that. The text menu keeps those lines off the screen.
 
 ```bash
 outline-image outline
@@ -421,4 +421,4 @@ MIT — see [`LICENSE.md`](./LICENSE.md). Also declared in `pyproject.toml`.
 
 ## Last Update
 
-2026-10-07 — **1.0.0**. The public source is `https://github.com/cloudgen/OutlineImage`. The package name is **OutlineImage** and the console script is `outline-image`. `outline` writes a detailed outline image for each picture in a folder. The default file is PNG in that folder's `output` directory. The lines come from brightness and from color, short specks are dropped, and each photo picks its own sensitivity inside a safe range. How an outline is made explains that method in plain language. Menu row 1 lists **1** current folder, each subfolder, and **0** back, then runs that conversion. The Screenshots section shows captures of this program. Version badge matches `pyproject.toml` and `__version__`. `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` are required.
+2026-10-07 — **1.0.1**. The public source is `https://github.com/cloudgen/OutlineImage`. The package name is **OutlineImage** and the console script is `outline-image`. `outline` writes a detailed outline image for each picture in a folder. The default file is PNG in that folder's `output` directory. The lines come from brightness and from color, short specks are dropped, and each photo picks its own sensitivity inside a safe range. How an outline is made explains that method in plain language. Menu row 1 lists **1** current folder, each subfolder, and **0** back, then runs that conversion. The Screenshots section shows captures of this program. Version badge matches `pyproject.toml` and `__version__`. `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` are required.

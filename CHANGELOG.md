@@ -3,12 +3,13 @@
 All notable changes to **OutlineImage** are documented here.  
 Version SSOT: `pyproject.toml` + `src/OutlineImage/__init__.__version__`.
 
-## [Unreleased]
+## [1.0.1] - 2026-10-07
 
 ### Changed
 
 - An outline uses brightness and color, drops short specks, and picks a sensitivity for each photo inside a safe range. A guessed circle or oval is not drawn.
-- The README section **How an outline is made** explains that method in plain language. Package version stays **1.0.0**.
+- The README section **How an outline is made** explains that method in plain language.
+- Package version is **1.0.1**. PyPI already had **1.0.0**, so this release is the upload of that improvement.
 
 ## [1.0.0] - 2026-10-05
 
