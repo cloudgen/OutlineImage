@@ -3,6 +3,13 @@
 All notable changes to **OutlineImage** are documented here.  
 Version SSOT: `pyproject.toml` + `src/OutlineImage/__init__.__version__`.
 
+## [1.0.2] - 2026-10-10
+
+### Fixed
+
+- A soft shadow on the object is no longer drawn as a brightness outline. A brightness line that is bright in the middle is left out too. A thin dark groove still is. Color edges are unchanged.
+- The README section **How an outline is made** explains that check. Package version is **1.0.2**.
+
 ## [1.0.1] - 2026-10-07
 
 ### Changed

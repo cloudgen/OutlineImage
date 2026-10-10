@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-python-cli-interface.md
-**Status**: Active (Version 1.1.5)
+**Status**: Active (Version 1.1.6)
 **Area**: python
 **Key**: `requirement-python-cli-interface`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -150,7 +150,7 @@ Menu row 1 asks which folder. That question is `requirement-python-tui`. Esc the
 | **Quiet / JSON** | Text screen sets `is_quiet=True` on the logger construct. No `--json` |
 | **Privilege** | user-level only |
 | **Outline** | `Cli._verb_outline` prints the waiting sentence and flushes, flashes the please-wait bullet on a terminal, erases that bullet, then prints only the remainder. It does not draw the menu |
-| **Product version** | `1.0.1` |
+| **Product version** | `1.0.2` |
 | **User docs** | Root `README.md` Usage matches this contract |
 
 ### 2.9 Why This Requirement Exists (CIAO)
@@ -242,9 +242,10 @@ On Termux, Git Bash, Windows cmd, or the same class, the person runs `outline-im
 | 2026-10-05 | Active 1.1.3 | `outline` and `./convert.py` print the domain waiting sentence and flush before the work, then print only the remainder |
 | 2026-10-05 | Active 1.1.4 | On a terminal those commands flash the please-wait bullet and erase it when the work finishes |
 | 2026-10-07 | Active 1.1.5 | Product version is **1.0.1** |
+| 2026-10-10 | Active 1.1.6 | Product version is **1.0.2** |
 
 ---
 
-**Last Updated**: 2026-10-07
+**Last Updated**: 2026-10-10
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

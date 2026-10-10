@@ -499,6 +499,52 @@ class TestOutline(unittest.TestCase):
         self.assertNotIn("please wait", "\n".join(finished))
         self.assertIn("Output format: .png", finished)
 
+    def test_a_brightness_shadow_is_not_an_outline(self):
+        """A shadow step drops. A dark groove and a color edge stay."""
+        import cv2
+        import numpy as np
+
+        from OutlineImage import outline
+
+        height, width = 220, 240
+        light = np.full((height, width), 180, np.uint8)
+        light[:, 70:] = 130
+        light[:, 169:171] = 50
+        mask = np.full((height, width), 255, np.uint8)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        inner = cv2.erode(mask, kernel)
+        band = (
+            outline.BRIGHT_LOW_FLOOR,
+            outline.BRIGHT_HIGH_FLOOR,
+            outline.BRIGHT_LOW_CAP,
+            outline.BRIGHT_HIGH_CAP,
+        )
+        plain = outline._channel_edges(
+            cv2, np, light, mask, inner, band,
+            outline.BRIGHT_EDGE_SIGMA, outline.BRIGHT_SPECK,
+        )
+        kept = outline._channel_edges(
+            cv2, np, light, mask, inner, band,
+            outline.BRIGHT_EDGE_SIGMA, outline.BRIGHT_SPECK,
+            groove=True,
+        )
+        step = slice(60, 82)
+        groove = slice(158, 182)
+        self.assertGreater(int(np.count_nonzero(plain[:, step])), 40)
+        self.assertEqual(int(np.count_nonzero(kept[:, step])), 0)
+        self.assertGreater(int(np.count_nonzero(kept[:, groove])), 40)
+
+        lab = np.zeros((height, width, 3), np.uint8)
+        lab[:, :, 0] = light
+        lab[:, :, 1] = 128
+        lab[:, :, 2] = 128
+        lab[:, :40, 1] = 90
+        bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+        drawn = outline._detail_edges(cv2, np, bgr, mask)
+        self.assertEqual(int(np.count_nonzero(drawn[:, step])), 0)
+        self.assertGreater(int(np.count_nonzero(drawn[:, groove])), 40)
+        self.assertGreater(int(np.count_nonzero(drawn[:, 30:50])), 40)
+
 
 def _visible(text):
     """Apply carriage returns so a test can read the line the operator sees."""

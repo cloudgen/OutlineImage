@@ -2,27 +2,27 @@
 
 **Product:** OutlineImage (Python CLI — text menu on a terminal; `outline` writes a detailed outline image for each picture in a chosen folder, default PNG in that folder's `output` directory; menu row 1 picks the current folder or a subfolder)
 **Workspace state:** Specialized product law (left genesis); **software-development** class; **pip/local package** install (not shell online Type O).
-**Product version:** **1.0.1** (align `pyproject.toml`, `__init__.__version__`, root `README.md` Version badge)
-**Updated:** 2026-10-07
+**Product version:** **1.0.2** (align `pyproject.toml`, `__init__.__version__`, root `README.md` Version badge)
+**Updated:** 2026-10-10
 
 | ID / key | Title | Area | Status | Path | Updated |
 |----------|-------|------|--------|------|---------|
-| requirement-class-software-dev | Software-development class law + residual stack (Python, setuptools) | class | Active | `requirement-class-software-dev.md` | 2026-10-07 |
-| requirement-domain-outlineimage | Domain surface SSOT (typed `outline`, folder board on menu row 1, help, about, waiting sentence and a flashing please-wait bullet before converting images and before a model download; lines from brightness and color, sensitivity per photo, no guessed shape) | domain | Active | `requirement-domain-outlineimage.md` | 2026-10-07 |
-| requirement-python-about | About page: identity, host check, star box. No `--json` | python | Active | `requirement-python-about.md` | 2026-10-07 |
+| requirement-class-software-dev | Software-development class law + residual stack (Python, setuptools) | class | Active | `requirement-class-software-dev.md` | 2026-10-10 |
+| requirement-domain-outlineimage | Domain surface SSOT (typed `outline`, folder board on menu row 1, help, about, waiting sentence and a flashing please-wait bullet before converting images and before a model download; lines from brightness and color, a brightness shadow step and a bright middle are not drawn, a thin dark groove stays, sensitivity per photo, no guessed shape) | domain | Active | `requirement-domain-outlineimage.md` | 2026-10-10 |
+| requirement-python-about | About page: identity, host check, star box. No `--json` | python | Active | `requirement-python-about.md` | 2026-10-10 |
 | requirement-video-ffmpeg-pipeline | Retired. No encoder, no concat, no media publish | video | Retired | `requirement-video-ffmpeg-pipeline.md` | 2026-10-05 |
-| requirement-python-cli-interface | CLI entry, typed verbs, empty-argv menu on a terminal and help off a terminal. `outline` and `./convert.py` print the waiting sentence, flash please wait on a terminal, and erase that bullet when the work finishes | python | Active | `requirement-python-cli-interface.md` | 2026-10-07 |
-| requirement-python-cli-logging | ChronicleLogger construct in `def main`; required floor points at packaging | python | Active | `requirement-python-cli-logging.md` | 2026-10-07 |
-| requirement-python-tui | Text menu: outline, system-log, language, self-management, Exit. Row 1 lists the current folder, each subfolder, and back. A folder pick paints a working page with the waiting sentence and a flashing please-wait bullet. The bullet is gone on the result page. Path word is selected by the language requirement. Default is `Path`. Menu columns are display columns | python | Active | `requirement-python-tui.md` | 2026-10-07 |
+| requirement-python-cli-interface | CLI entry, typed verbs, empty-argv menu on a terminal and help off a terminal. `outline` and `./convert.py` print the waiting sentence, flash please wait on a terminal, and erase that bullet when the work finishes | python | Active | `requirement-python-cli-interface.md` | 2026-10-10 |
+| requirement-python-cli-logging | ChronicleLogger construct in `def main`; required floor points at packaging | python | Active | `requirement-python-cli-logging.md` | 2026-10-10 |
+| requirement-python-tui | Text menu: outline, system-log, language, self-management, Exit. Row 1 lists the current folder, each subfolder, and back. A folder pick paints a working page with the waiting sentence and a flashing please-wait bullet. The bullet is gone on the result page. Path word is selected by the language requirement. Default is `Path`. Menu columns are display columns | python | Active | `requirement-python-tui.md` | 2026-10-10 |
 | requirement-python-cli-language | Menu language: front row 4, codes 41–53, leaf `~/.local/OutlineImage/language`. `language` is not an argv verb | python | Active | `requirement-python-cli-language.md` | 2026-10-04 |
 | requirement-python-oop | L2 class map. Running tree stays three modules until an implement order | python | Active | `requirement-python-oop.md` | 2026-10-04 |
 | requirement-python-coding-style | Python style; temps; **shutil.move** publish; end state is the class map | python | Active | `requirement-python-coding-style.md` | 2026-10-04 |
-| requirement-python-packaging | `pyproject.toml` / version / console script. Pip strings point at the dependency file | python | Active | `requirement-python-packaging.md` | 2026-10-07 |
+| requirement-python-packaging | `pyproject.toml` / version / console script. Pip strings point at the dependency file | python | Active | `requirement-python-packaging.md` | 2026-10-10 |
 | requirement-python-dependency-management | Pip strings: `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, `rembg>=2.0.85`. No GUI `opencv-python`. No menu wheel | python | Active | `requirement-python-dependency-management.md` | 2026-10-05 |
 | requirement-python-project-structure | Repository and `src/OutlineImage` layout (running tree vs target map) | python | Active | `requirement-python-project-structure.md` | 2026-10-04 |
-| requirement-python-readme | Root user document: sections, badges, picture catalog, related projects, plain-language outline method | python | Active | `requirement-python-readme.md` | 2026-10-07 |
+| requirement-python-readme | Root user document: sections, badges, picture catalog, related projects, plain-language outline method | python | Active | `requirement-python-readme.md` | 2026-10-10 |
 | requirement-python-error-handling | Fail-closed errors; source-safe cleanup; console sentences stay | python | Active | `requirement-python-error-handling.md` | 2026-10-04 |
-| requirement-runtime-prerequisites | Pip image stack + required ChronicleLogger; no host FFmpeg; no root auto-install | runtime | Active | `requirement-runtime-prerequisites.md` | 2026-10-07 |
+| requirement-runtime-prerequisites | Pip image stack + required ChronicleLogger; no host FFmpeg; no root auto-install | runtime | Active | `requirement-runtime-prerequisites.md` | 2026-10-10 |
 
 ## Intentionally absent (by design)
 

@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-domain-outlineimage.md
-**Status**: Active (Version 1.3.4)
+**Status**: Active (Version 1.3.5)
 **Area**: domain
 **Key**: `requirement-domain-outlineimage`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -71,6 +71,8 @@ Supported inputs, top level only, are `.webp`, `.png`, `.jpg`, and `.jpeg`. Subf
 
 Inner lines come from brightness and from color. The cutout is split into lightness and two color channels (CIELAB). A part that matches the object in brightness can still be drawn when its color differs. The color pass stays more sensitive than the brightness pass. The area outside the object is filled with a typical object color before the search, and the search stays inside the object, so the outer shape is drawn once.
 
+A brightness step whose two sides do not match is a shadow on the object. It **MUST NOT** be drawn. A brightness line whose middle is the bright part is a highlight. It **MUST NOT** be drawn. A thin dark groove, darker in the middle with matching sides, **MUST** stay. Color edges are not subjected to that test. The distance and the depth live next to `MAX_EDGE` in `outline.py`. The root user document explains this check in plain language.
+
 Each photo picks its own sensitivity inside a fixed safe range. The range numbers live next to `MAX_EDGE` in `outline.py`. They are not frozen in this file. The program measures how much the foreground already changes from pixel to pixel (a Sobel gradient, then a high percentile of that change). A quiet surface uses the sensitive end of the range, so a faint seam still appears. A scratched or high-contrast photo uses the cautious end, so scuffs stay out. Short specks are dropped. One-pixel breaks in a real seam are closed.
 
 The program draws a line where the photo itself changes. It **MUST NOT** invent a circle, an ellipse, or any other guessed shape to close a gap. A rim that matches the object in both brightness and color may keep a short gap. The root user document explains this method in plain language. The words there match this paragraph.
@@ -129,7 +131,7 @@ The domain sentence on the about page is `Write a detailed outline for each imag
 | Field | Content |
 |-------|---------|
 | Product name | OutlineImage |
-| Version | `__version__`, the same string as `pyproject.toml` (current `1.0.1`) |
+| Version | `__version__`, the same string as `pyproject.toml` (current `1.0.2`) |
 | Domain summary | Write a detailed outline for each image in a folder |
 
 The page **MUST** use that domain sentence. The runtime-tools line **MUST** be `none`. It **MUST NOT** name FFmpeg. Pillow, OpenCV, numpy, and rembg are pip dependencies. They are not a host binary on that line.
@@ -145,7 +147,7 @@ The page **MUST** use that domain sentence. The runtime-tools line **MUST** be `
 | **Menu row** | Front row 1, kind `outline`, short `outline`. Folder board layer `folders` |
 | **Output** | `<folder>/output/{stem}_detailed_outline.png` by default |
 | **Inputs** | `.webp` `.png` `.jpg` `.jpeg`, this folder only |
-| **VERSION** | `1.0.1` (`__init__.py` and `pyproject.toml`) |
+| **VERSION** | `1.0.2` (`__init__.py` and `pyproject.toml`) |
 | **Absent** | `src/OutlineImage/join.py`, verbs `hello`, `join`, and `list-videos`, FFmpeg |
 | **CLI SSOT** | `requirement-python-cli-interface` |
 | **Screen** | `requirement-python-tui` |
@@ -224,6 +226,7 @@ On Termux, Git Bash, Windows cmd, or the same class, `outline` and the menu run 
 | **TP-OUTLINE-03** | `tests/test_outline.py` | have | Row 1 opens the folder board: current, sorted children, back |
 | **TP-OUTLINE-04** | `tests/test_outline.py` | have | The sentence names the choice and the process. Converting is announced before the download. A weights file that is already present does not say the model is downloading. A bad format, a failed output directory, and a missing import stay honest |
 | **TP-OUTLINE-05** | `tests/test_outline.py` | have | The please-wait bullet flashes during the conversion and is absent from the result. On a terminal the live line is erased when the work finishes |
+| **TP-OUTLINE-06** | `tests/test_outline.py` | have | A brightness step whose sides do not match is not drawn. A thin dark groove is drawn. A color edge on flat brightness is drawn |
 
 **Matrix:** `docs/reviews/requirement-test-matrix.md`
 **Map:** `docs/reviews/test-plan.md`
@@ -240,9 +243,10 @@ On Termux, Git Bash, Windows cmd, or the same class, `outline` and the menu run 
 | 2026-10-05 | Active 1.3.2 | A flashing `• please wait` bullet stays while that process runs and is removed when it finishes. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.3.3 | Lines come from brightness and color. Each photo picks a sensitivity inside a safe range. Short specks are dropped. A guessed circle or ellipse is refused. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.3.4 | Product version is **1.0.1** |
+| 2026-10-10 | Active 1.3.5 | A brightness step with unmatched sides is a shadow and is not drawn. A bright middle is left out. A dark groove and color edges stay. Product version is **1.0.2** |
 
 ---
 
-**Last Updated**: 2026-10-07
+**Last Updated**: 2026-10-10
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-python-readme.md
-**Status**: Active (Version 1.0.5)
+**Status**: Active (Version 1.0.6)
 **Area**: python
 **Key**: `requirement-python-readme`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -55,7 +55,7 @@ Each behavioral sentence **MUST** match its owner and **MUST NOT** restate that 
 | Claim in the document | Owner |
 |-----------------------|--------|
 | Folder conversion, default png, `<folder>/output` | `requirement-domain-outlineimage` |
-| How an outline is drawn: Pillow, rembg `isnet-general-use`, OpenCV brightness and color, a sensitivity per photo, speck removal, and no guessed shape | `requirement-domain-outlineimage` |
+| How an outline is drawn: Pillow, rembg `isnet-general-use`, OpenCV brightness and color, a sensitivity per photo, a brightness shadow step and a bright middle left out, a thin dark groove kept, speck removal, and no guessed shape | `requirement-domain-outlineimage` |
 | No encoder | `requirement-video-ffmpeg-pipeline` is Retired |
 | Menu picture, path row, clock, row numbers | `requirement-python-tui` |
 | Thirteen languages and what stays English | `requirement-python-cli-language` |
@@ -95,7 +95,7 @@ The first-row sentence in the user document **MUST** name the current directory 
 | **Pictures** | `screenshots/` |
 | **Package** | `OutlineImage` |
 | **Console script** | `outline-image` |
-| **Version** | `1.0.1` from `src/OutlineImage/__init__.py` (`__version__`). `pyproject.toml` copies that string |
+| **Version** | `1.0.2` from `src/OutlineImage/__init__.py` (`__version__`). `pyproject.toml` copies that string |
 | **Python** | `>=3.10`. The badge says 3.10+ |
 | **License file** | `LICENSE.md` (MIT). The file is present. The document link stays relative |
 | **Homes** | `https://github.com/cloudgen/OutlineImage` and `https://pypi.org/project/OutlineImage/` |
@@ -115,8 +115,8 @@ The first-row sentence in the user document **MUST** name the current directory 
 |---------|------------------------------|------------------------|
 | Features | Text menu: outline, system-log, language, self-management, Exit. Path and a local clock on the first row. Row 1 lists the current folder, each subfolder, and back. system-log is **3**. language is **4**. self-management is **8**. Verbs `help`, `version`, `about`, `outline`, `self-install`, `version-check`, `self-update`, `self-uninstall`. Checkout entry `./convert.py` | Peers in §2.2. The path-row sentence is the clock rule in §2.2 |
 | Advantages | The four parts and the comparison table below | This file for the contrast. Peers in §2.2 for the behavior |
-| How an outline is made | Plain language for the method in `requirement-domain-outlineimage`: Pillow shrinks the long side to 1600, rembg with `isnet-general-use` cuts the object out, NumPy holds the pixels, and OpenCV draws the outer shape plus inner lines from brightness and from color (CIELAB). Canny uses a Sobel measurement so each photo picks a sensitivity inside a safe range. Color stays more sensitive than brightness. Short specks are dropped. A rim that matches the object in brightness and color can keep a short gap. A guessed circle or oval is not used | `requirement-domain-outlineimage` for the method. This file for the section |
-| Quick Installation | `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85`. `pip install OutlineImage`. No external media tool. Checkout uses a venv and `pip install -e .`. The fenced text menu (front, system-log, language, self-management) stays in this section and shows row 1 **outline** and version **1.0.1** | `requirement-python-dependency-management`, `requirement-runtime-prerequisites`, `requirement-python-packaging`, `requirement-python-tui` |
+| How an outline is made | Plain language for the method in `requirement-domain-outlineimage`: Pillow shrinks the long side to 1600, rembg with `isnet-general-use` cuts the object out, NumPy holds the pixels, and OpenCV draws the outer shape plus inner lines from brightness and from color (CIELAB). Canny uses a Sobel measurement so each photo picks a sensitivity inside a safe range. Color stays more sensitive than brightness. A brightness step whose sides do not match is left out, and so is a line that is bright in the middle. A thin dark groove stays. Color lines and the outer shape skip that check. Short specks are dropped. A rim that matches the object in brightness and color can keep a short gap. A guessed circle or oval is not used | `requirement-domain-outlineimage` for the method. This file for the section |
+| Quick Installation | `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85`. `pip install OutlineImage`. No external media tool. Checkout uses a venv and `pip install -e .`. The fenced text menu (front, system-log, language, self-management) stays in this section and shows row 1 **outline** and version **1.0.2** | `requirement-python-dependency-management`, `requirement-runtime-prerequisites`, `requirement-python-packaging`, `requirement-python-tui` |
 | Usage | Menu versus typed verbs. `outline` converts a folder and does not draw the menu. Menu row 1 lists the current folder, each subfolder, and back. Default PNG in that folder's `output` directory. No terminal: empty argv prints help and returns 0. `self-uninstall` needs `--force`. No sudo | `requirement-python-cli-interface`, `requirement-domain-outlineimage`, `requirement-python-tui` |
 | Screenshots | Lead: each heading is the file name, and the paragraph is what that picture shows. Package **1.0.0**. The paragraph and the image alt are the catalog below. The menu pictures are captures of this program. Row 1 is **outline** | This file |
 | Examples | `cd` to a folder of images, then `outline-image`, then `outline-image version`, then `outline-image outline` | `requirement-domain-outlineimage` |
@@ -124,7 +124,7 @@ The first-row sentence in the user document **MUST** name the current directory 
 | Related Projects | The eight lines below, in that order, each with one sentence | This file |
 | Contributing | Keep product law in sync. The conversion lives in `src/OutlineImage/outline.py`. Version strings stay together | `requirement-python-coding-style`, `requirement-python-packaging` |
 | License | MIT, link `LICENSE.md`, and that file exists | `requirement-python-packaging` |
-| Last Update | Names package **1.0.1**, the public source `https://github.com/cloudgen/OutlineImage`, the outline conversion, that lines use brightness and color with a per-photo sensitivity, and that the Screenshots section shows captures of this program | This file for the line. `__version__` for the string |
+| Last Update | Names package **1.0.2**, the public source `https://github.com/cloudgen/OutlineImage`, the outline conversion, that lines use brightness and color with a per-photo sensitivity, that a brightness shadow step and a bright middle are left out, and that the Screenshots section shows captures of this program | This file for the line. `__version__` for the string |
 
 **Related projects, in this order.** The first two are this program. Each line is one sentence. Do not add an install recipe.
 
@@ -259,9 +259,10 @@ The documented install is for this login. **This requirement:** the user documen
 | 2026-10-05 | Active 1.0.3 | Public source is `https://github.com/cloudgen/OutlineImage`. Twenty captures of this program replace the previous-product pictures. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.0.4 | How an outline is made explains the drawing method in plain language. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.0.5 | The document's package string is **1.0.1**. Screenshot paragraphs still quote the **1.0.0** captures |
+| 2026-10-10 | Active 1.0.6 | How an outline is made leaves out a brightness shadow step and a bright middle, and keeps a thin dark groove. The document's package string is **1.0.2**. Screenshot paragraphs still quote the **1.0.0** captures |
 
 ---
 
-**Last Updated**: 2026-10-07
+**Last Updated**: 2026-10-10
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

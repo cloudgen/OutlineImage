@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-python-packaging.md
-**Status**: Active (Version 1.2.6)
+**Status**: Active (Version 1.2.7)
 **Area**: python
 **Key**: `requirement-python-packaging`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -12,7 +12,7 @@ This file owns the manifest shape. The pip requirement strings are `requirement-
 
 ### 1.1 Human-facing
 
-**In one sentence:** OutlineImage is a pip package named OutlineImage, version 1.0.1. The status library and the image stack are required dependencies.
+**In one sentence:** OutlineImage is a pip package named OutlineImage, version 1.0.2. The status library and the image stack are required dependencies.
 
 | Box | Meaning | Example |
 |-----|---------|---------|
@@ -51,7 +51,7 @@ This file owns the manifest shape. The pip requirement strings are `requirement-
 
 5. The package version in `pyproject.toml` and `src/OutlineImage/__init__.py` (`__version__`) **MUST** match when a release is claimed.
 6. Bumping either **MUST** update both in the same change.
-7. **MUST NOT** invent a third version constant. Display code **MUST NOT** keep a second literal, including a fallback `"1.0.0"` (`requirement-python-oop`). The current release string is `1.0.1`. A version bump is a user order, not a side effect of editing this file.
+7. **MUST NOT** invent a third version constant. Display code **MUST NOT** keep a second literal, including a fallback `"1.0.0"` (`requirement-python-oop`). The current release string is `1.0.2`. A version bump is a user order, not a side effect of editing this file.
 
 ### 2.3 Dependencies
 
@@ -78,7 +78,7 @@ This file owns the manifest shape. The pip requirement strings are `requirement-
 |------|--------|
 | **Manifest** | `pyproject.toml` |
 | **Project name** | `OutlineImage` |
-| **Version** | `1.0.1` |
+| **Version** | `1.0.2` |
 | **requires-python** | `>=3.10` |
 | **Dependencies (law)** | The five strings in `requirement-python-dependency-management`: `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, `rembg>=2.0.85` |
 | **Dependencies (live manifest)** | The same five strings |
@@ -89,7 +89,7 @@ This file owns the manifest shape. The pip requirement strings are `requirement-
 | **License** | MIT |
 | **Public package exports** | `__version__`, `main` only. **MUST NOT** re-export `ChronicleLogger` |
 | **User docs** | Root `README.md` Quick Installation documents pip and **MUST NOT** claim pip installs FFmpeg |
-| **README version badge** | Must match packaging version when README claims complete (`1.0.1`) |
+| **README version badge** | Must match packaging version when README claims complete (`1.0.2`) |
 
 ### 2.7 Why This Requirement Exists (CIAO)
 
@@ -171,9 +171,10 @@ On Termux, Git Bash, Windows cmd, or the same class, install and upgrade use pip
 | 2026-10-05 | Active 1.2.4 | Pip strings move to `requirement-python-dependency-management`. Each entry has a version floor. Product version stays **1.0.0** |
 | 2026-10-05 | Active 1.2.5 | Homepage and repository URL are `https://github.com/cloudgen/OutlineImage`. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.2.6 | Product version is **1.0.1**. PyPI already held **1.0.0** |
+| 2026-10-10 | Active 1.2.7 | Product version is **1.0.2** |
 
 ---
 
-**Last Updated**: 2026-10-07
+**Last Updated**: 2026-10-10
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

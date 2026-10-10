@@ -1,5 +1,5 @@
 **file**: docs/requirements/requirement-runtime-prerequisites.md
-**Status**: Active (Version 1.2.2)
+**Status**: Active (Version 1.2.3)
 **Area**: runtime
 **Key**: `requirement-runtime-prerequisites`
 **Philosophy**: CIAO **v2.10.2** / CIAO-Lite (Caution • Intentional • Anti-fragile • Over-engineered / Over-protect)
@@ -76,7 +76,7 @@ Declare the host and Python runtime prerequisites required to run OutlineImage. 
 | **System binary** | none. `ffmpeg` is not required |
 | **Auto install command** | none. The product does not run a root install. The first outline that has an image may download model `isnet-general-use` |
 | **Platform notes** | Linux primary. macOS and Windows when CPython is available |
-| **Product version** | 1.0.1 |
+| **Product version** | 1.0.2 |
 | **Startup check** | No encoder check. The image stack is imported only when the chosen folder has a supported image |
 | **User docs** | Root `README.md` names the pip image stack and says no external media tool is required |
 
@@ -154,9 +154,10 @@ On Termux, Git Bash, Windows cmd, or the same class, the normal user installs th
 | 2026-10-05 | Active 1.2.0 | No host encoder. Image stack is pip. Product version **1.0.0**. About runtime tools are `none` |
 | 2026-10-05 | Active 1.2.1 | Pip strings point at `requirement-python-dependency-management`. Product version stays **1.0.0** |
 | 2026-10-07 | Active 1.2.2 | Product version is **1.0.1** |
+| 2026-10-10 | Active 1.2.3 | Product version is **1.0.2** |
 
 ---
 
-**Last Updated**: 2026-10-07
+**Last Updated**: 2026-10-10
 **Owner**: project maintainers
 **Alignment**: Registry `docs/requirements/index.md`; **CIAO** (https://github.com/cloudgen/ciao); CIAO-Lite (https://github.com/cloudgen/ciao-lite).

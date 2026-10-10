@@ -1,6 +1,6 @@
 # OutlineImage - Detailed outline images from a folder
 
-![Version](https://img.shields.io/badge/Version-1.0.1-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-1.0.2-blue?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 [![CIAO](https://img.shields.io/badge/Philosophy-CIAO%20(Caution%20%E2%80%A2%20Intentional%20%E2%80%A2%20Anti--fragile%20%E2%80%A2%20Over--engineered)-purple.svg)](https://github.com/cloudgen/ciao)
 [![Stars](https://img.shields.io/github/stars/cloudgen/OutlineImage?style=flat-square)](https://github.com/cloudgen/OutlineImage)
@@ -31,7 +31,7 @@ On a terminal, starting it with no arguments opens a text menu. The menu does no
 
 ## How an outline is made
 
-An outline here is a new picture: white lines on a black background. The lines follow the shape of the object, and they also follow the parts you can see on it, such as a hole, a ridge, a seam, a pad, or a slot. The file is written in an `output` folder next to the photo. Its name is the photo's name plus `_detailed_outline`.
+An outline here is a new picture: white lines on a black background. The lines follow the shape of the object, and they also follow the parts you can see on it, such as a hole, a ridge, a seam, a pad, or a slot. A soft shadow on the object is left out. The file is written in an `output` folder next to the photo. Its name is the photo's name plus `_detailed_outline`.
 
 Four libraries do this work. They install with the program. You do not open them yourself.
 
@@ -67,9 +67,25 @@ One pair for every photo is a poor fit. A plain surface needs a sensitive settin
 
 Each photo therefore picks its own pair, and the pick stays inside a safe range. OpenCV's **Sobel** filter measures how fast the picture changes from one pixel to the next. The program looks at those measurements on the object only, and it takes a high point in that list: the 90th percentile, stronger than about nine tenths of the pixels and weaker than the strongest scratches. The high cut starts from that point. The low cut is forty percent of the high cut. Both cuts are then clipped so they cannot leave the safe range. A quiet surface lands on the sensitive end, so a faint seam still appears. A busy or high-contrast photo lands on the cautious end, so scuffs stay out. The safe range for color sits lower than the safe range for brightness.
 
+### A soft shadow is left out
+
+The brightness search can still mark a soft shadow. On the phone stand, that is the gentle shade along a curved hinge, or the shade one piece casts on another. The shade is a real change in brightness, so the line finder can see it. The program then checks those brightness lines and takes the shadow lines out.
+
+The check uses the smoothed brightness. For each brightness line it looks a short distance to either side, along the direction of the change, and compares the two ends of that look.
+
+A shadow step fails the look. One end stays darker than the other, so the two sides do not match, and the line is removed.
+
+A bright ridge fails the look too. The middle is the light part. That is a highlight on a curve, and the line is removed.
+
+A thin dark groove passes. The two ends match, the middle is the dark part, and the middle is darker by a real amount. The groove stays. A slot or a molded seam that is darker in the middle stays for this reason.
+
+Color lines skip this look. A hole or a pad that differs in color still appears. The outer shape, drawn from the cutout, skips it too.
+
+A very soft seam can look like a shadow step. When its two sides do not match, that seam is left out with the shadow.
+
 ### Cleaning the lines
 
-A real seam is a run of pixels. A speck of dust is a few pixels. OpenCV groups touching edge pixels, which are called connected components, and drops a group that is shorter than a real seam. That cleanup runs for the brightness lines, for the color lines, and once more after the lines are combined.
+A real seam is a run of pixels. A speck of dust is a few pixels. OpenCV groups touching edge pixels, which are called connected components, and drops a group that is shorter than a real seam. On brightness, this cleanup runs after the shadow look, so a removed shadow can also lose any short scrap it left behind. The same cleanup runs for the color lines, and once more after the lines are combined.
 
 A closing step then fills a one-pixel break, so a seam does not fall into dashes. Tiny holes in the cutout's transparency are filled the same way, and tiny spikes of transparency are removed, so a speck of background does not become a fake hole. Pixels that are only faintly transparent are treated as outside the object.
 
@@ -79,11 +95,12 @@ The white lines and the outer shape are combined on a black picture and saved. T
 
 The first drawing looked only at brightness. It used one Canny setting for every photo, with cuts at 40 and 120, after a stronger smooth. On a bright object, a hole, a knob ridge, a hinge seam, or a pad can be as light as the plastic around it. Those parts dropped out. Small dirt marks could remain, because short specks were kept.
 
-Three changes are what the program uses now.
+Four changes are what the program uses now.
 
 1. **Color as well as brightness.** The two LAB color facts are searched too, and their safe range stays more sensitive than brightness. A part that matches the plastic in brightness still gets a line when its color differs.
 2. **A sensitivity that follows the photo.** The Sobel measurement replaces the single pair of cuts. A plain surface is more sensitive. A scratched surface is less sensitive. Both stay inside the safe range.
 3. **Specks are thrown away.** Short edge fragments are dropped. Dust and a one-pixel sparkle stay out of the drawing. A one-pixel gap in a real seam is closed.
+4. **A soft shadow is not a line.** Brightness lines are checked a short distance along the change. A step whose two sides do not match is left out, and so is a line that is bright in the middle. A thin dark groove, and any edge that is a color change, stays.
 
 A line is drawn where the photo itself changes. When a rim matches the plastic in both brightness and color, the photo has no edge there, and a short gap can remain. The program leaves that gap. Guessing a circle or an oval on those gaps was tried and was not kept: a guessed oval replaced a real slot and cut across real ridges. The drawing stays with the edges the photo actually has.
 
@@ -97,7 +114,7 @@ A line is drawn where the photo itself changes. When a rim matches the plastic i
 pip install OutlineImage
 ```
 
-This installs the console entry **`outline-image`** and the package **`OutlineImage`**. Packaging name SSOT is `pyproject.toml` `[project].name` = `OutlineImage`. This tree is **1.0.1**. The PyPI badge above shows the live index.
+This installs the console entry **`outline-image`** and the package **`OutlineImage`**. Packaging name SSOT is `pyproject.toml` `[project].name` = `OutlineImage`. This tree is **1.0.2**. The PyPI badge above shows the live index.
 
 ### Local install (checkout)
 
@@ -133,7 +150,7 @@ Path: /tmp/clips                                                       12:06:45
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.1  │  main menu  │  Up/Down  •  Enter
+  OutlineImage 1.0.2  │  main menu  │  Up/Down  •  Enter
 ```
 
 **system-log** (3):
@@ -152,7 +169,7 @@ Path: /tmp/clips                                                       12:06:45
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.1  │  system-log  │  Up/Down  •  Enter
+  OutlineImage 1.0.2  │  system-log  │  Up/Down  •  Enter
 ```
 
 **language** (4). The short on each language row is that language’s own name. Numbers 40 and 54–59 are not printed. `0` goes back and does not save.
@@ -178,7 +195,7 @@ Path: /tmp/clips                                                       12:06:46
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.1  │  language  │  Up/Down  •  Enter
+  OutlineImage 1.0.2  │  language  │  Up/Down  •  Enter
 ```
 
 **self-management** (8):
@@ -197,7 +214,7 @@ Path: /tmp/clips                                                       14:05:09
 ╭─────────────────────────────────────────────────────────────────────────────╮
 │ >                                                                           │
 ╰─────────────────────────────────────────────────────────────────────────────╯
-  OutlineImage 1.0.1  │  self-management  │  Up/Down  •  Enter
+  OutlineImage 1.0.2  │  self-management  │  Up/Down  •  Enter
 ```
 
 Choose a number, or type the command name in the box. The block caret appears in that box while it is focused.
@@ -231,7 +248,7 @@ outline-image self-install
 outline-image self-uninstall --force
 ```
 
-`version` prints `OutlineImage 1.0.1` and does not call pip. `about` shows one English page: the product identity, a host check of this computer, and a star box. It does not call pip. `outline` converts the current directory when no folder is given and does not draw the menu. `help` prints usage.
+`version` prints `OutlineImage 1.0.2` and does not call pip. `about` shows one English page: the product identity, a host check of this computer, and a star box. It does not call pip. `outline` converts the current directory when no folder is given and does not draw the menu. `help` prints usage.
 
 `version-check` runs `python -m pip index versions OutlineImage`. `self-update` runs `python -m pip install --upgrade OutlineImage`. `self-install` runs `python -m pip install OutlineImage`. `self-uninstall` runs `python -m pip uninstall -y OutlineImage` and needs `--force` on the command line. Those pip verbs do not use sudo. Empty arguments do not install or update.
 
@@ -378,7 +395,7 @@ outline-image
 outline-image version
 ```
 
-`version` prints `OutlineImage 1.0.1` and does not call pip. A run that is not the text menu can also print ChronicleLogger status lines above that. The text menu keeps those lines off the screen.
+`version` prints `OutlineImage 1.0.2` and does not call pip. A run that is not the text menu can also print ChronicleLogger status lines above that. The text menu keeps those lines off the screen.
 
 ```bash
 outline-image outline
@@ -421,4 +438,4 @@ MIT — see [`LICENSE.md`](./LICENSE.md). Also declared in `pyproject.toml`.
 
 ## Last Update
 
-2026-10-07 — **1.0.1**. The public source is `https://github.com/cloudgen/OutlineImage`. The package name is **OutlineImage** and the console script is `outline-image`. `outline` writes a detailed outline image for each picture in a folder. The default file is PNG in that folder's `output` directory. The lines come from brightness and from color, short specks are dropped, and each photo picks its own sensitivity inside a safe range. How an outline is made explains that method in plain language. Menu row 1 lists **1** current folder, each subfolder, and **0** back, then runs that conversion. The Screenshots section shows captures of this program. Version badge matches `pyproject.toml` and `__version__`. `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` are required.
+2026-10-10 — **1.0.2**. The public source is `https://github.com/cloudgen/OutlineImage`. The package name is **OutlineImage** and the console script is `outline-image`. `outline` writes a detailed outline image for each picture in a folder. The default file is PNG in that folder's `output` directory. The lines come from brightness and from color. A brightness step whose sides do not match is left out as a shadow, a line that is bright in the middle is left out, and a thin dark groove stays. Short specks are dropped, and each photo picks its own sensitivity inside a safe range. How an outline is made explains that method in plain language. Menu row 1 lists **1** current folder, each subfolder, and **0** back, then runs that conversion. The Screenshots section shows captures of this program. Version badge matches `pyproject.toml` and `__version__`. `ChronicleLogger>=1.3.1`, `numpy>=2.3.0`, `Pillow>=12.1.0`, `opencv-python-headless>=5.0.0.93`, and `rembg>=2.0.85` are required.

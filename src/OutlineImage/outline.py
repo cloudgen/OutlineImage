@@ -42,6 +42,13 @@ COLOR_EDGE_SIGMA = 22
 BRIGHT_SPECK = 22
 COLOR_SPECK = 10
 EDGE_SPECK = 12
+# A brightness edge is kept only when it is a thin dark groove.
+# Samples run this far along the gradient. The two banks must agree
+# within the margin, and the middle must be at least that much darker.
+# A shadow step has banks that do not agree, so it is left out.
+# requirement-domain-outlineimage.
+SHADOW_SPAN = 6
+SHADOW_MARGIN = 8
 
 
 def list_subfolders(folder):
@@ -267,8 +274,56 @@ def _edge_limits(cv2, np, blurred, inner, low_floor, high_floor, low_cap, high_c
     return low, high
 
 
-def _channel_edges(cv2, np, plane, mask, inner, band, sigma, min_area):
-    """Canny on one channel. Outside the object is filled so the rim is not an edge."""
+def _dark_groove(cv2, np, plane, radius, margin):
+    """Mask of a thin dark groove on one brightness plane.
+
+    Samples run from -radius to +radius along the Sobel direction.
+    A groove has matching banks, its darkest sample near the middle,
+    its brightest sample away from the middle, and a depth of at least
+    margin. A shadow step has banks that do not match. A bright ridge
+    has its brightest sample in the middle. Both are left out.
+    requirement-domain-outlineimage.
+    """
+    gradient_x = cv2.Sobel(plane, cv2.CV_32F, 1, 0, ksize=3)
+    gradient_y = cv2.Sobel(plane, cv2.CV_32F, 0, 1, ksize=3)
+    magnitude = np.sqrt(gradient_x * gradient_x + gradient_y * gradient_y) + 1e-3
+    direction_x = (gradient_x / magnitude).astype(np.float32)
+    direction_y = (gradient_y / magnitude).astype(np.float32)
+    height, width = plane.shape
+    yy, xx = np.indices((height, width), dtype=np.float32)
+    center = plane.astype(np.float32)
+    samples = []
+    stops = int(radius) * 2 + 1
+    for offset in np.linspace(-radius, radius, stops):
+        offset = np.float32(offset)
+        samples.append(cv2.remap(
+            center,
+            xx + direction_x * offset,
+            yy + direction_y * offset,
+            cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_REPLICATE,
+        ))
+    stack = np.stack(samples, axis=0)
+    banks_match = np.abs(stack[0] - stack[-1]) <= margin
+    darkest = np.argmin(stack, axis=0)
+    brightest = np.argmax(stack, axis=0)
+    middle = stack.shape[0] // 2
+    near = max(1, int(radius) // 2)
+    valley = np.abs(darkest - middle) <= near
+    highlight = np.abs(brightest - middle) <= near
+    depth = np.minimum(stack[0], stack[-1]) - stack.min(axis=0)
+    groove = banks_match & valley & np.logical_not(highlight) & (depth >= margin)
+    keep = np.zeros(plane.shape, np.uint8)
+    keep[groove] = 255
+    return keep
+
+
+def _channel_edges(cv2, np, plane, mask, inner, band, sigma, min_area, groove=False):
+    """Canny on one channel. Outside the object is filled so the rim is not an edge.
+
+    groove is for brightness only. A step whose banks do not match is a
+    shadow and is removed before short specks are dropped.
+    """
     foreground = plane[mask > 0]
     if foreground.size == 0:
         return np.zeros(mask.shape, np.uint8)
@@ -278,6 +333,10 @@ def _channel_edges(cv2, np, plane, mask, inner, band, sigma, min_area):
     low, high = _edge_limits(cv2, np, blurred, inner, *band)
     found = cv2.Canny(blurred, low, high)
     found = cv2.bitwise_and(found, inner)
+    if groove:
+        found = cv2.bitwise_and(
+            found, _dark_groove(cv2, np, blurred, SHADOW_SPAN, SHADOW_MARGIN)
+        )
     return _drop_short_edges(cv2, np, found, min_area)
 
 
@@ -286,6 +345,8 @@ def _detail_edges(cv2, np, bgr, mask):
 
     The cut follows this photo. A gray hole in a bright object can share a
     brightness and still differ in color, so the color band stays lower.
+    A brightness step whose banks do not match is a shadow and is left out.
+    A dark groove stays. Color edges are not tested that way.
     """
     lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -299,6 +360,7 @@ def _detail_edges(cv2, np, bgr, mask):
     edges = _channel_edges(
         cv2, np, lab[:, :, 0], mask, inner,
         bright_band, BRIGHT_EDGE_SIGMA, BRIGHT_SPECK,
+        groove=True,
     )
     for channel in (1, 2):
         edges = cv2.bitwise_or(
@@ -319,8 +381,9 @@ def extract_detailed_outline(image_path, output_dir, session, output_format, sta
 
     output_format is an extension without a dot. The file name is
     <stem>_detailed_outline.<ext> inside output_dir. Brightness edges and
-    color edges are both drawn. The cut follows the photo, so a part that
-    matches the object in brightness still appears.
+    color edges are both drawn. A brightness step whose banks do not match
+    is a shadow and is left out. A dark groove stays. The cut follows the
+    photo, so a part that matches the object in brightness still appears.
     """
     cv2, np, Image, _new_session, remove = stack
     ext = output_format.lstrip(".").lower()
